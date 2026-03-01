@@ -23,8 +23,10 @@ build/
 .venv/
 venv/
 
-# Claude Code (user-specific)
-.claude/
+# Claude Code (user-specific config, but keep skills)
+.claude/*
+!.claude/skills/
+!.claude/settings.json
 
 # Playwright MCP (dev artifacts)
 .playwright-mcp/
