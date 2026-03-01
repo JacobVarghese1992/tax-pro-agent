@@ -539,19 +539,23 @@ class IRSFormFiller:
         fields = {}
 
         # CA 540 uses field names like "540_form_NNNN"
-        # Page 1 header - from tooltips
-        fields["540_form_1003"] = self.inp.first_name        # First name
-        fields["540_form_1005"] = self.inp.last_name          # Last name
+        # Page 1 header fields:
+        #   1003 = Your first name, 1004 = Middle initial, 1005 = Last name, 1006 = Suffix
+        #   1007 = Your SSN
+        #   1008 = Spouse first name, 1009 = Spouse MI, 1010 = Spouse last name, 1011 = Suffix
+        #   1012 = Spouse SSN
+        fields["540_form_1003"] = self.inp.first_name
+        fields["540_form_1005"] = self.inp.last_name
         ssn = self.inp.ssn.replace("-", "")
-        fields["540_form_1007"] = ssn  # SSN
+        fields["540_form_1007"] = ssn
 
         # Spouse (MFJ)
         if self.inp.filing_status == "married_filing_jointly" and self.inp.spouse_first_name:
-            fields["540_form_1004"] = self.inp.spouse_first_name   # Spouse first name
-            fields["540_form_1006"] = self.inp.spouse_last_name or ""  # Spouse last name
+            fields["540_form_1008"] = self.inp.spouse_first_name
+            fields["540_form_1010"] = self.inp.spouse_last_name or ""
             if self.inp.spouse_ssn:
                 sp_ssn = self.inp.spouse_ssn.replace("-", "")
-                fields["540_form_1008"] = sp_ssn
+                fields["540_form_1012"] = sp_ssn
 
         # Address
         if self.inp.address:
