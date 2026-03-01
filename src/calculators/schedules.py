@@ -8,6 +8,7 @@ from src.constants import (
     CAPITAL_LOSS_LIMIT,
     FEDERAL_BRACKETS_SINGLE,
     FOREIGN_TAX_CREDIT_SIMPLIFIED_LIMIT,
+    HSA_NONQUALIFIED_PENALTY_RATE,
     LTCG_0_THRESHOLD,
     LTCG_15_THRESHOLD,
     MEDICARE_RATE_SELF_EMPLOYED,
@@ -239,6 +240,13 @@ def calculate_schedule_1(
     )
     rental_income = sum((f.box_1_rents for f in tax_input.forms_1099_misc), _Z)
     other_income = sum((f.box_3_other_income for f in tax_input.forms_1099_misc), _Z)
+
+    # Non-qualified HSA distributions are taxable (Form 8889 → Schedule 1 Line 8z)
+    nonqualified_hsa = sum(
+        (f.box_1_gross_distribution for f in tax_input.forms_1099_sa if not f.qualified), _Z
+    )
+    other_income += nonqualified_hsa
+
     total_additional = business_income + rental_income + other_income
 
     # Part II - Adjustments
@@ -269,6 +277,7 @@ def calculate_schedule_2(
     total_medicare_wages: Decimal,
     net_investment_income: Decimal,
     agi: Decimal,
+    nonqualified_hsa: Decimal = Decimal("0"),
     additional_medicare_threshold: Decimal = ADDITIONAL_MEDICARE_THRESHOLD_SINGLE,
     niit_threshold: Decimal = NIIT_THRESHOLD_SINGLE,
 ) -> Schedule2Result | None:
@@ -284,7 +293,10 @@ def calculate_schedule_2(
     niit_base = min(net_investment_income, agi_excess)
     niit = round_dollar(max(Decimal("0"), niit_base) * NIIT_RATE)
 
-    total = se_tax + additional_medicare + niit
+    # HSA non-qualified distribution penalty: 20% (Form 8889 Part III)
+    hsa_penalty = round_dollar(nonqualified_hsa * HSA_NONQUALIFIED_PENALTY_RATE)
+
+    total = se_tax + additional_medicare + niit + hsa_penalty
     if total == 0:
         return None
 

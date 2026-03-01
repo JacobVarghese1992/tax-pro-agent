@@ -61,8 +61,11 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
     misc_income = sum((f.box_1_rents for f in tax_input.forms_1099_misc), _Z) + sum(
         (f.box_3_other_income for f in tax_input.forms_1099_misc), _Z
     )
+    nonqualified_hsa = sum(
+        (f.box_1_gross_distribution for f in tax_input.forms_1099_sa if not f.qualified), _Z
+    )
     cap_gain = schedule_d.line_21_net_capital_gain_loss if schedule_d else _Z
-    preliminary_income = wages + interest_income + ordinary_dividends + cap_gain + nec_income + misc_income
+    preliminary_income = wages + interest_income + ordinary_dividends + cap_gain + nec_income + misc_income + nonqualified_hsa
     se_deduction = schedule_se.line_13_deductible_half if schedule_se else _Z
     early_withdrawal = sum(
         (f.box_2_early_withdrawal_penalty for f in tax_input.forms_1099_int), _Z
@@ -176,6 +179,7 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
     schedule_2 = calculate_schedule_2(
         schedule_se, combined_medicare_wages, net_investment_income,
         result.line_11_adjusted_gross_income,
+        nonqualified_hsa=nonqualified_hsa,
         additional_medicare_threshold=fsc["additional_medicare_threshold"],
         niit_threshold=fsc["niit_threshold"],
     )

@@ -215,6 +215,20 @@ class Form1098(BaseModel):
     box_10_property_tax: Decimal = Field(default=Decimal("0"))
 
 
+class Form1099SA(BaseModel):
+    """Form 1099-SA: Distributions From an HSA, Archer MSA, or Medicare Advantage MSA."""
+    payer_name: str
+    payer_tin: Optional[str] = None
+    recipient_name: str
+    recipient_tin: str
+
+    box_1_gross_distribution: Decimal = Field(default=Decimal("0"))
+    box_2_earnings_on_excess: Decimal = Field(default=Decimal("0"))
+    box_3_distribution_code: str = Field(default="1", description="1=Normal, 2=Excess, 3=Disability, 4=Death, 5=Prohibited, 6=Transfer")
+    box_5_account_type: str = Field(default="HSA", description="HSA, Archer MSA, or MA MSA")
+    qualified: bool = Field(default=True, description="Whether distribution was used for qualified medical expenses")
+
+
 class Form1099MISC(BaseModel):
     """Form 1099-MISC: Miscellaneous Information."""
     payer_name: str
@@ -268,6 +282,7 @@ class TaxInput(BaseModel):
     forms_1099_nec: list[Form1099NEC] = Field(default_factory=list)
     forms_1099_b: list[Form1099B] = Field(default_factory=list)
     forms_1099_misc: list[Form1099MISC] = Field(default_factory=list)
+    forms_1099_sa: list[Form1099SA] = Field(default_factory=list)
     forms_1098: list[Form1098] = Field(default_factory=list)
     forms_1098_e: list[Form1098E] = Field(default_factory=list)
 

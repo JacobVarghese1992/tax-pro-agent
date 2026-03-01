@@ -114,6 +114,14 @@ class TaxReportGenerator:
                 a(f"    Box 3  Other income: {_fmt(f.box_3_other_income)}")
             a("")
 
+        for f in self.inp.forms_1099_sa:
+            a(f"  1099-SA from {f.payer_name}")
+            a(f"    Recipient: {f.recipient_name}")
+            a(f"    Box 1  Gross distribution: {_fmt(f.box_1_gross_distribution)}")
+            a(f"    Box 5  Account type: {f.box_5_account_type}")
+            a(f"    Qualified: {'Yes' if f.qualified else 'No (taxable + 20% penalty)'}")
+            a("")
+
         for f in self.inp.forms_1098:
             a(f"  1098 from {f.lender_name}")
             a(f"    Borrower: {f.borrower_name}")

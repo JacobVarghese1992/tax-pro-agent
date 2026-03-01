@@ -98,6 +98,12 @@ NIIT_THRESHOLD_MFJ = Decimal("250000")
 FOREIGN_TAX_CREDIT_SIMPLIFIED_LIMIT_MFJ = Decimal("600")
 
 # =============================================
+# HSA (Form 1099-SA / Form 8889)
+# =============================================
+
+HSA_NONQUALIFIED_PENALTY_RATE = Decimal("0.20")
+
+# =============================================
 # SCHEDULE A: ITEMIZED DEDUCTIONS
 # =============================================
 
