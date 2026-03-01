@@ -6,15 +6,24 @@
 >
 > **Always consult a qualified tax professional before filing your tax return.**
 
-A tax preparation tool that uses Claude Code to extract data from W-2, 1099, and 1098 PDFs, then calculates and generates 2025 Federal Form 1040 and California Form 540 tax returns.
+A tax preparation tool that uses an AI coding agent to extract data from W-2, 1099, and 1098 PDFs, then calculates and generates 2025 Federal Form 1040 and California Form 540 tax returns.
 
 ## How It Works
 
 1. Drop your tax document PDFs (W-2s, 1099s, 1098s) into the `input/` directory
-2. Run the `/tax-filing` skill in Claude Code
-3. Claude reads each PDF, extracts all fields, assembles a structured JSON, runs the calculator, and presents your results
+2. Run the `/tax-filing` skill in your coding agent
+3. The agent reads each PDF, extracts all fields, assembles a structured JSON, runs the calculator, and presents your results
 
 The `/tax-filing` skill handles the entire pipeline — you don't need to manually create any JSON files or run any commands.
+
+### Supported Platforms
+
+The skill in `.claude/skills/tax-filing/` uses the cross-platform agent skills format and works with:
+
+- **Claude Code** (recommended — the skill was written and tested here)
+- **GitHub Copilot** agent mode in VS Code
+- **OpenAI Codex** CLI and IDE extension
+- **Cursor**, and other agent platforms that support the skills standard
 
 ## Features
 
@@ -73,7 +82,7 @@ pytest
 
 ## Privacy Warning
 
-**Never commit real tax documents or personal financial data to version control.** The `input/` and `output/` directories are gitignored by default. The included `sample_tax_data.json` contains only fake data for testing purposes.
+**Never commit real tax documents or personal financial data to version control.** The `input/` and `output/` directories are gitignored by default.
 
 ## License
 
