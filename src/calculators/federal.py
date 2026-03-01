@@ -18,6 +18,7 @@ from src.utils import (
     calculate_student_loan_deduction,
     calculate_tax_from_brackets,
     get_filing_status_constants,
+    round_dollar,
 )
 
 
@@ -117,6 +118,15 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
     )
 
     # ── Step 5: Deductions and taxable income (Lines 12-15) ──
+
+    # Section 199A Qualified Business Income deduction (20% of 199A dividends)
+    section_199a_dividends = sum(
+        (f.box_5_section_199a_dividends for f in tax_input.forms_1099_div), _Z
+    )
+    if section_199a_dividends > 0:
+        result.line_13_qualified_business_deduction = round_dollar(
+            section_199a_dividends * Decimal("0.20")
+        )
 
     schedule_a = calculate_schedule_a(tax_input, fsc["standard_deduction"])
     result.line_12_standard_deduction = fsc["standard_deduction"]

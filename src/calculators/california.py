@@ -19,8 +19,16 @@ def calculate_california_tax(
     result.federal_agi = federal.line_11_adjusted_gross_income
 
     # ── Step 2: California Additions ──
-    # With standard deduction (no state/local tax deduction), additions are typically $0
-    result.ca_additions = Decimal("0")
+    # California does not recognize HSA tax benefits. W-2 Box 12 Code W
+    # (employer + employee HSA contributions) was excluded from federal wages
+    # but must be added back for CA.
+    _Z = Decimal("0")
+    hsa_contributions = _Z
+    for w in tax_input.w2s:
+        for code in w.box_12_codes:
+            if code.code.upper() == "W":
+                hsa_contributions += code.amount
+    result.ca_additions = hsa_contributions
 
     # ── Step 3: California Subtractions ──
     # US Treasury bond interest is exempt from CA tax
