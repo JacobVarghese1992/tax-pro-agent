@@ -76,8 +76,6 @@ def apply_cross_broker_wash_sales(tax_input: TaxInput) -> None:
 
     _Z = Decimal("0")
 
-    _Z = Decimal("0")
-
     # Build a list of all transactions tagged with their broker index
     # We track sales (for loss detection) and acquisitions (for wash sale matching)
     sales = []  # (broker_idx, txn, ticker, sale_date, shares)

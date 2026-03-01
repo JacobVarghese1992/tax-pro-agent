@@ -18,16 +18,16 @@ class TestCABrackets:
         assert tax == Decimal("100")
 
     def test_94460_taxable(self):
-        """The simple W2 scenario: CA taxable income $94,460."""
-        # 1% on $10,756 = $107.56
-        # 2% on ($25,499 - $10,756) = $294.86
-        # 4% on ($40,245 - $25,499) = $589.84
-        # 6% on ($55,866 - $40,245) = $937.26
-        # 8% on ($70,606 - $55,866) = $1,179.20
-        # 9.3% on ($94,460 - $70,606) = $2,218.42
-        # Total = $5,327.14 -> $5,327
+        """CA taxable income $94,460 with 2025 brackets."""
+        # 1% on $11,079 = $110.79
+        # 2% on ($26,264 - $11,079) = $303.70
+        # 4% on ($41,452 - $26,264) = $607.52
+        # 6% on ($57,542 - $41,452) = $965.40
+        # 8% on ($72,724 - $57,542) = $1,214.56
+        # 9.3% on ($94,460 - $72,724) = $2,021.45
+        # Total = $5,223.42 -> $5,223
         tax = calculate_tax_from_brackets(Decimal("94460"), CA_BRACKETS_SINGLE)
-        assert tax == Decimal("5327")
+        assert tax == Decimal("5223")
 
 
 class TestSimpleW2California:
@@ -39,19 +39,19 @@ class TestSimpleW2California:
     def test_ca_taxable_income(self, simple_w2_input):
         federal = calculate_federal_tax(simple_w2_input)
         ca = calculate_california_tax(simple_w2_input, federal)
-        # CA AGI $100k - CA std deduction $5,540 = $94,460
-        assert ca.ca_taxable_income == Decimal("94460")
+        # CA AGI $100k - CA std deduction $5,706 = $94,294
+        assert ca.ca_taxable_income == Decimal("94294")
 
     def test_ca_tax(self, simple_w2_input):
         federal = calculate_federal_tax(simple_w2_input)
         ca = calculate_california_tax(simple_w2_input, federal)
-        assert ca.ca_tax == Decimal("5327")
+        assert ca.ca_tax == Decimal("5208")
 
     def test_ca_exemption(self, simple_w2_input):
         federal = calculate_federal_tax(simple_w2_input)
         ca = calculate_california_tax(simple_w2_input, federal)
-        assert ca.ca_exemption_credit == Decimal("149")
-        assert ca.ca_tax_after_exemption == Decimal("5178")
+        assert ca.ca_exemption_credit == Decimal("153")
+        assert ca.ca_tax_after_exemption == Decimal("5055")
 
     def test_ca_withholdings(self, simple_w2_input):
         federal = calculate_federal_tax(simple_w2_input)
@@ -64,10 +64,10 @@ class TestSimpleW2California:
         federal = calculate_federal_tax(simple_w2_input)
         ca = calculate_california_tax(simple_w2_input, federal)
         # Total payments = 5500 (CA withholding only, SDI not a credit)
-        # Tax = 5178
-        # Refund = 5500 - 5178 = 322
+        # Tax = 5055
+        # Refund = 5500 - 5055 = 445
         assert ca.total_payments == Decimal("5500")
-        assert ca.refund == Decimal("322")
+        assert ca.refund == Decimal("445")
 
 
 class TestCANoPreferentialRates:
@@ -112,6 +112,6 @@ class TestCAMentalHealthSurcharge:
 
         federal = calculate_federal_tax(ti)
         ca = calculate_california_tax(ti, federal)
-        # CA taxable = $1,100,000 - $5,540 = $1,094,460
-        # Surcharge = 1% of ($1,094,460 - $1,000,000) = $945 (rounded)
-        assert ca.mental_health_surcharge == Decimal("945")
+        # CA taxable = $1,100,000 - $5,706 = $1,094,294
+        # Surcharge = 1% of ($1,094,294 - $1,000,000) = $943 (rounded)
+        assert ca.mental_health_surcharge == Decimal("943")

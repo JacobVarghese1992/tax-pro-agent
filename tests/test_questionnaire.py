@@ -50,7 +50,7 @@ class TestChildTaxCredit:
             Dependent(name="Child One", ssn="999-88-7777", relationship="son", age=5)
         ])
         result = calculate_federal_tax(ti)
-        assert result.line_19_child_credit == Decimal("2000")
+        assert result.line_19_child_credit == Decimal("2200")
 
     def test_two_children(self):
         ti = _base_input(dependents=[
@@ -58,7 +58,7 @@ class TestChildTaxCredit:
             Dependent(name="Child Two", ssn="999-88-6666", relationship="daughter", age=10),
         ])
         result = calculate_federal_tax(ti)
-        assert result.line_19_child_credit == Decimal("4000")
+        assert result.line_19_child_credit == Decimal("4400")
 
     def test_child_17_gets_other_credit(self):
         ti = _base_input(dependents=[
@@ -74,8 +74,8 @@ class TestChildTaxCredit:
             Dependent(name="Old", ssn="999-88-6666", relationship="daughter", age=20),
         ])
         result = calculate_federal_tax(ti)
-        # $2,000 for child under 17 + $500 for other dependent
-        assert result.line_19_child_credit == Decimal("2500")
+        # $2,200 for child under 17 + $500 for other dependent
+        assert result.line_19_child_credit == Decimal("2700")
 
     def test_credit_reduces_tax(self):
         no_kids = calculate_federal_tax(_base_input())
@@ -94,7 +94,7 @@ class TestChildTaxCreditPhaseout:
             agi=Decimal("150000"),
             phaseout_start=Decimal("200000"),
         )
-        assert credit == Decimal("2000")
+        assert credit == Decimal("2200")
 
     def test_above_threshold_reduced(self):
         credit = calculate_child_tax_credit(
@@ -102,8 +102,8 @@ class TestChildTaxCreditPhaseout:
             agi=Decimal("210000"),
             phaseout_start=Decimal("200000"),
         )
-        # $10k over threshold → 10 × $50 = $500 reduction → $2,000 - $500 = $1,500
-        assert credit == Decimal("1500")
+        # $10k over threshold → 10 × $50 = $500 reduction → $2,200 - $500 = $1,700
+        assert credit == Decimal("1700")
 
     def test_far_above_threshold_zero(self):
         credit = calculate_child_tax_credit(
@@ -111,7 +111,7 @@ class TestChildTaxCreditPhaseout:
             agi=Decimal("300000"),
             phaseout_start=Decimal("200000"),
         )
-        # $100k over → 100 × $50 = $5,000 reduction → $2,000 - $5,000 = $0
+        # $100k over → 100 × $50 = $5,000 reduction → $2,200 - $5,000 = $0
         assert credit == Decimal("0")
 
 

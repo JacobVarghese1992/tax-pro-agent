@@ -15,6 +15,9 @@ from src.constants import (
     NIIT_RATE,
     NIIT_THRESHOLD_SINGLE,
     SALT_DEDUCTION_LIMIT,
+    SALT_PHASEDOWN_AGI_THRESHOLD,
+    SALT_PHASEDOWN_FLOOR,
+    SALT_PHASEDOWN_RATE,
     SCHEDULE_B_THRESHOLD,
     SE_INCOME_FACTOR,
     SS_RATE_SELF_EMPLOYED,
@@ -38,7 +41,7 @@ from src.utils import calculate_tax_from_brackets, round_dollar
 
 
 def calculate_schedule_a(
-    tax_input: TaxInput, standard_deduction: Decimal
+    tax_input: TaxInput, standard_deduction: Decimal, agi: Decimal = Decimal("0")
 ) -> ScheduleAResult | None:
     """Calculate Schedule A: Itemized Deductions.
 
@@ -67,8 +70,14 @@ def calculate_schedule_a(
     # Line 5d: Total SALT before cap
     salt_total = state_income_tax + property_tax
 
-    # Line 5e: SALT deduction (capped at $10,000)
-    salt_deduction = min(salt_total, SALT_DEDUCTION_LIMIT)
+    # Line 5e: SALT deduction (OBBB Act: $40,000 cap with phasedown for high earners)
+    # Phasedown: cap reduced by 30% of MAGI exceeding $500,000, floor of $10,000
+    salt_cap = SALT_DEDUCTION_LIMIT
+    if agi > SALT_PHASEDOWN_AGI_THRESHOLD:
+        excess = agi - SALT_PHASEDOWN_AGI_THRESHOLD
+        reduction = round_dollar(excess * SALT_PHASEDOWN_RATE)
+        salt_cap = max(SALT_PHASEDOWN_FLOOR, salt_cap - reduction)
+    salt_deduction = min(salt_total, salt_cap)
 
     # Lines 8a, 8c: Mortgage interest and points from Form 1098
     mortgage_interest = sum((f.box_1_mortgage_interest for f in tax_input.forms_1098), _Z)

@@ -44,11 +44,14 @@ def calculate_california_tax(
     result.ca_standard_deduction = fsc["ca_standard_deduction"]
 
     # If federal used itemized deductions, compute CA itemized deductions.
-    # CA allows mortgage interest but does NOT allow SALT deduction (can't
-    # deduct state taxes on the state return). Use whichever is greater.
+    # CA does NOT allow state income tax deduction (can't deduct state taxes
+    # on the state return), but DOES allow: mortgage interest, property taxes
+    # (no $10k SALT cap for CA), and charitable contributions.
     if federal.schedule_a and federal.schedule_a.used_itemized:
         ca_mortgage_interest = federal.schedule_a.line_10_total_interest
-        result.ca_itemized_deduction = ca_mortgage_interest
+        ca_property_tax = federal.schedule_a.line_5b_state_local_property_tax
+        ca_charitable = federal.schedule_a.line_12_charitable_cash
+        result.ca_itemized_deduction = ca_mortgage_interest + ca_property_tax + ca_charitable
         if result.ca_itemized_deduction > result.ca_standard_deduction:
             result.ca_used_itemized = True
 

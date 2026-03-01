@@ -86,8 +86,8 @@ class TestQDCGWorksheet:
         )
         # Ordinary income = 0, preferential = 50000
         assert result.line_6_ordinary_income == Decimal("0")
-        # 0% up to $48,475, 15% on $1,525
-        expected_tax = Decimal("0") + (Decimal("1525") * Decimal("0.15")).quantize(
+        # 0% up to $48,350, 15% on $1,650
+        expected_tax = Decimal("0") + (Decimal("1650") * Decimal("0.15")).quantize(
             Decimal("1")
         )
         assert result.line_25_total_tax == expected_tax

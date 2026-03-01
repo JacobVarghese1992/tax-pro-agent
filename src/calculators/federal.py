@@ -132,7 +132,9 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
             section_199a_dividends * Decimal("0.20")
         )
 
-    schedule_a = calculate_schedule_a(tax_input, fsc["standard_deduction"])
+    schedule_a = calculate_schedule_a(
+        tax_input, fsc["standard_deduction"], result.line_11_adjusted_gross_income
+    )
     result.line_12_standard_deduction = fsc["standard_deduction"]
 
     if schedule_a and schedule_a.used_itemized:
