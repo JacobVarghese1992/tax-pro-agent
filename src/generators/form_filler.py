@@ -194,8 +194,21 @@ class IRSFormFiller:
             writer.update_page_form_field_values(page, fields)
 
         # Set filing status checkbox
-        fs_value = filing_status_map.get(self.inp.filing_status, "/1")
-        self._set_checkbox(writer, "topmostSubform[0].Page1[0].c1_8[0]", fs_value)
+        # The Form 1040 has checkboxes at specific paths:
+        #   Single:  Checkbox_ReadOrder[0].c1_8[0] value=/1
+        #   MFJ:     Checkbox_ReadOrder[0].c1_8[1] value=/2
+        #   MFS:     Checkbox_ReadOrder[0].c1_8[2] value=/3
+        #   HOH:     c1_8[0] (directly under Page1) value=/4
+        #   QSS:     c1_8[1] (directly under Page1) value=/5
+        fs = self.inp.filing_status
+        if fs == "single":
+            self._check_radio(writer, "c1_8", 0, "/1", page_idx=0)
+        elif fs == "married_filing_jointly":
+            self._check_radio(writer, "c1_8", 1, "/2", page_idx=0)
+        elif fs == "married_filing_separately":
+            self._check_radio(writer, "c1_8", 2, "/3", page_idx=0)
+        elif fs == "head_of_household":
+            self._check_radio(writer, "c1_8", 0, "/4", page_idx=0)
 
         with open(output_path, "wb") as f:
             writer.write(f)
@@ -266,12 +279,17 @@ class IRSFormFiller:
         fields[f"{p1}.f1_02[0]"] = ssn
 
         # Part I - Interest (up to 14 payers)
-        # Fields are pairs: f1_03/f1_04 = row 1 name/amount, f1_05/f1_06 = row 2, etc.
+        # Row 1 name is nested: Line1_ReadOrder[0].f1_03[0]
+        # All other fields are directly under Page1[0]: f1_04, f1_05, etc.
         interest_fields_start = 3
         for i, item in enumerate(sb.interest_items[:14]):
             name_idx = interest_fields_start + (i * 2)
             amt_idx = name_idx + 1
-            fields[f"{p1}.f1_{name_idx:02d}[0]"] = item.payer_name
+            if i == 0:
+                # First payer name is nested under Line1_ReadOrder[0]
+                fields[f"{p1}.Line1_ReadOrder[0].f1_03[0]"] = item.payer_name
+            else:
+                fields[f"{p1}.f1_{name_idx:02d}[0]"] = item.payer_name
             fields[f"{p1}.f1_{amt_idx:02d}[0]"] = _amt(item.amount)
 
         # Line 2 - Sum of interest, Line 4 - Total interest
@@ -373,21 +391,29 @@ class IRSFormFiller:
                     lt_noncovered.append(t)
 
         generated = []
+        rows_per_page = 11
         categories = [
-            ("A", st_covered, "8949_Part1_BoxA.pdf"),
-            ("B", st_noncovered, "8949_Part1_BoxB.pdf"),
-            ("D", lt_covered, "8949_Part2_BoxD.pdf"),
-            ("E", lt_noncovered, "8949_Part2_BoxE.pdf"),
+            ("A", st_covered, "8949_Part1_BoxA"),
+            ("B", st_noncovered, "8949_Part1_BoxB"),
+            ("D", lt_covered, "8949_Part2_BoxD"),
+            ("E", lt_noncovered, "8949_Part2_BoxE"),
         ]
 
-        for box, transactions, filename in categories:
+        for box, transactions, base_name in categories:
             if not transactions:
                 continue
-            path = self._fill_8949_page(
-                template, output_dir / filename, box, transactions
-            )
-            if path:
-                generated.append(path)
+            # Split into chunks of 11 transactions per page
+            for page_num, start in enumerate(range(0, len(transactions), rows_per_page)):
+                chunk = transactions[start:start + rows_per_page]
+                if page_num == 0:
+                    filename = f"{base_name}.pdf"
+                else:
+                    filename = f"{base_name}_p{page_num + 1}.pdf"
+                path = self._fill_8949_page(
+                    template, output_dir / filename, box, chunk
+                )
+                if path:
+                    generated.append(path)
 
         return generated
 
@@ -478,8 +504,8 @@ class IRSFormFiller:
         for page in writer.pages:
             writer.update_page_form_field_values(page, fields)
 
-        # Set checkbox
-        self._set_checkbox(writer, cb_name, "/1")
+        # Set checkbox for box type (A/B/C or D/E/F)
+        self._check_radio(writer, f"c{'1' if is_part1 else '2'}_1", cb_idx, "/1", page_idx=0 if is_part1 else 1)
 
         with open(output_path, "wb") as f:
             writer.write(f)
@@ -622,36 +648,76 @@ class IRSFormFiller:
         for page in writer.pages:
             writer.update_page_form_field_values(page, fields)
 
-        # Set filing status
+        # Set filing status radio button
+        # CA 540 radio states use descriptive names like "/1 . Single."
         ca_fs_map = {
-            "single": "/1",
-            "married_filing_jointly": "/2",
-            "married_filing_separately": "/3",
-            "head_of_household": "/4",
-            "qualifying_surviving_spouse": "/5",
+            "single": "/1 . Single.",
+            "married_filing_jointly": "/2 . Married/R D P filing jointly (even if only one spouse / R D P had income). See instructions.",
+            "married_filing_separately": "/3 . Married or R D P filing separately.",
+            "head_of_household": "/4 . Head of household (with qualifying person). See instructions.",
+            "qualifying_surviving_spouse": "/5 . Qualifying surviving spouse or R D P .",
         }
-        ca_fs_value = ca_fs_map.get(self.inp.filing_status, "/1")
-        self._set_checkbox(writer, "540_form_1036 RB", ca_fs_value)
+        ca_fs_value = ca_fs_map.get(self.inp.filing_status)
+        if ca_fs_value:
+            self._set_radio_by_field_name(writer, "540_form_1036 RB", ca_fs_value)
 
         with open(output_path, "wb") as f:
             writer.write(f)
         return output_path
 
     @staticmethod
-    def _set_checkbox(writer: PdfWriter, field_name: str, value: str) -> None:
-        """Set a checkbox/radio button value in the PDF."""
-        for page in writer.pages:
-            if "/Annots" not in page:
+    def _check_radio(
+        writer: PdfWriter, field_base: str, index: int, value: str, page_idx: int = 0
+    ) -> None:
+        """Check a radio button / checkbox by finding the annotation and setting /AS.
+
+        Args:
+            field_base: The field name without the [index] suffix (e.g. "c1_8")
+            index: Which instance of the field to target (0-based)
+            value: The appearance state to set (e.g. "/1", "/2")
+            page_idx: Which page the annotation is on
+        """
+        from pypdf.generic import NameObject
+
+        page = writer.pages[page_idx]
+        if "/Annots" not in page:
+            return
+
+        target_name = f"{field_base}[{index}]"
+        for annot in page["/Annots"]:
+            obj = annot.get_object()
+            if "/T" not in obj:
                 continue
-            for annot in page["/Annots"]:
-                obj = annot.get_object()
-                if "/T" in obj and str(obj["/T"]) == field_name.split(".")[-1].split("[")[0]:
-                    # Try to match the full path or just the field name
-                    pass
-        # Use the writer's built-in method
-        try:
-            writer.update_page_form_field_values(
-                writer.pages[0], {field_name: value}
-            )
-        except Exception:
-            pass
+            name = str(obj["/T"])
+            if name == target_name:
+                ap = obj.get("/AP", {})
+                normal = ap.get("/N", {})
+                if value in normal:
+                    obj[NameObject("/AS")] = NameObject(value)
+                    obj[NameObject("/V")] = NameObject(value)
+                    return
+
+    @staticmethod
+    def _set_radio_by_field_name(
+        writer: PdfWriter, field_name: str, value: str
+    ) -> None:
+        """Set a radio button group by its field name (for fields with /Kids).
+
+        Iterates through the radio group's kid annotations and checks the one
+        whose appearance matches the target value.
+        """
+        from pypdf.generic import NameObject
+
+        fields = writer._root_object.get("/AcroForm", {}).get("/Fields", [])
+        for field_ref in fields:
+            field = field_ref.get_object()
+            if str(field.get("/T", "")) == field_name:
+                kids = field.get("/Kids", [])
+                for kid_ref in kids:
+                    kid = kid_ref.get_object()
+                    ap = kid.get("/AP", {})
+                    normal = ap.get("/N", {})
+                    if value in normal:
+                        kid[NameObject("/AS")] = NameObject(value)
+                        field[NameObject("/V")] = NameObject(value)
+                        return
