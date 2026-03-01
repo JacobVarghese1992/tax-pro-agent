@@ -2,6 +2,7 @@
 
 from decimal import Decimal
 
+from src.calculators.wash_sales import apply_cross_broker_wash_sales
 from src.calculators.schedules import (
     calculate_qdcg_worksheet,
     calculate_schedule_1,
@@ -45,6 +46,9 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
     total_w2_ss_wages = sum((w.social_security_wages for w in tax_input.w2s), _Z)
     total_medicare_wages = sum((w.medicare_wages_and_tips for w in tax_input.w2s), _Z)
     # Add SE Medicare wages later if applicable
+
+    # ── Step 1.5: Cross-broker wash sale detection ──
+    apply_cross_broker_wash_sales(tax_input)
 
     # ── Step 2: Compute schedules ──
 
