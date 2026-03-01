@@ -179,6 +179,7 @@ After extracting all PDF data and confirming filing status, ask the user these q
 2. **Charitable contributions**: "Did you make any charitable cash donations in 2025? If yes, what was the total amount?"
 3. **Estimated tax payments**: "Did you make any estimated tax payments (quarterly) for 2025? If yes, how much total for federal and how much for California?"
 4. **Digital assets**: Auto-detect from 1099-B/1099-DA — if any crypto or digital asset transactions exist, set `digital_assets` to `true`. Otherwise ask: "Did you sell, exchange, or otherwise dispose of any digital assets (cryptocurrency, NFTs) in 2025?"
+5. **Brokerage trade history** (for cross-broker wash sales): If any 1099-B transactions show sales at a loss, ask: "Do you have brokerage trade history or account statements from other brokers showing purchases of the same securities (e.g. VOO, MSFT) within 30 days of those loss sales? If so, provide the PDF or CSV files so we can check for cross-broker wash sales." Extract purchase entries from those files into `trade_history`.
 
 Add the answers to the JSON in Step 3.
 
@@ -195,6 +196,7 @@ For **Single** filing:
   "last_name": "...",
   "ssn": "XXX-XX-XXXX",
   "state": "CA",
+  "trade_history": [],
   "dependents": [],
   "charitable_contributions_cash": "0.00",
   "federal_estimated_payments": "0.00",
@@ -224,6 +226,7 @@ For **Married Filing Jointly (MFJ)**: include spouse info, and put W2s/1099s fro
   "spouse_last_name": "...",
   "spouse_ssn": "XXX-XX-XXXX",
   "state": "CA",
+  "trade_history": [{"broker_name": "Fidelity", "ticker": "VOO", "date_acquired": "03/20/2025", "shares": "50"}],
   "dependents": [{"name": "...", "ssn": "XXX-XX-XXXX", "relationship": "son", "age": 5}],
   "charitable_contributions_cash": "0.00",
   "federal_estimated_payments": "0.00",
@@ -270,6 +273,7 @@ Read `output/2025_tax_return.txt` and present the key results:
 - For 1099-SA: set `qualified` to `true` if the distribution was used for qualified medical expenses (the common case). Ask the user if unsure. Set to `false` only if the user confirms the distribution was NOT for medical expenses — this triggers taxable income + 20% penalty.
 - For 1099-SA `box_3_distribution_code`: use "1" (Normal), "2" (Excess contributions), "3" (Disability), "4" (Death), "5" (Prohibited transaction), or "6" (Transfer)
 - For 1099-SA `box_5_account_type`: use "HSA", "Archer MSA", or "MA MSA"
+- For trade history entries: only include **purchases** of securities that were NOT sold in 2025 (sales are already on 1099-B). Each entry needs `broker_name`, `ticker` (symbol), `date_acquired` (purchase date), and `shares` (quantity). Extract these from brokerage trade confirmations, account statements, or CSV exports.
 - 1098 `box_10_property_tax` may be blank on many 1098 forms — use "0.00" if not present
 - 1098 `borrower_name` should match the name on the form (may be either spouse)
 - 1098-E `borrower_name` should match the name on the form (may be either spouse)

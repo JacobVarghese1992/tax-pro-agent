@@ -70,9 +70,11 @@ def apply_cross_broker_wash_sales(tax_input: TaxInput) -> None:
     Only detects cross-broker wash sales. Intra-broker wash sales are already
     handled by the broker's 1099-B reporting.
     """
-    if len(tax_input.forms_1099_b) < 2:
-        # Need at least 2 brokers for cross-broker wash sales
+    if len(tax_input.forms_1099_b) < 2 and not tax_input.trade_history:
+        # Need multiple brokers or trade history for cross-broker wash sales
         return
+
+    _Z = Decimal("0")
 
     _Z = Decimal("0")
 
@@ -101,6 +103,13 @@ def apply_cross_broker_wash_sales(tax_input: TaxInput) -> None:
             # other brokers).
             if acq_date and shares:
                 acquisitions.append((broker_idx, ticker, acq_date, shares))
+
+    # Add purchases from trade history (these are buy-only transactions not on 1099-B)
+    # Use broker_idx = -1 to ensure they're always treated as cross-broker
+    for entry in tax_input.trade_history:
+        acq_date = parse_date(entry.date_acquired)
+        if acq_date and entry.shares > _Z:
+            acquisitions.append((-1, entry.ticker, acq_date, entry.shares))
 
     # Group acquisitions by ticker for fast lookup
     acq_by_ticker: dict[str, list[tuple[int, date, Decimal]]] = defaultdict(list)

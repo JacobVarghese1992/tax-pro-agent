@@ -258,6 +258,18 @@ class Form1099MISC(BaseModel):
 # Aggregate Tax Input
 # =============================================
 
+class TradeHistoryEntry(BaseModel):
+    """A purchase transaction from brokerage trade history (not on 1099-B).
+
+    Used for cross-broker wash sale detection. Only purchases that were NOT
+    sold in the tax year need to be included — sales are already on the 1099-B.
+    """
+    broker_name: str
+    ticker: str = Field(description="Ticker symbol, e.g. VOO, MSFT")
+    date_acquired: str = Field(description="Purchase date, e.g. 03/15/2025")
+    shares: Decimal = Field(description="Number of shares purchased")
+
+
 class Dependent(BaseModel):
     """A dependent claimed on the tax return."""
     name: str
@@ -286,6 +298,9 @@ class TaxInput(BaseModel):
 
     # Dependents
     dependents: list[Dependent] = Field(default_factory=list)
+
+    # Trade history (for cross-broker wash sale detection)
+    trade_history: list[TradeHistoryEntry] = Field(default_factory=list)
 
     # Additional info (not from tax documents)
     charitable_contributions_cash: Decimal = Field(default=Decimal("0"))
