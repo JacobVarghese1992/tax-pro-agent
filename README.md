@@ -1,5 +1,11 @@
 # 2025 Tax Pro
 
+> **This tool is purely experimental. Do not trust the output of this software to file your taxes.** The generated forms, calculations, and reports may contain errors and should never be submitted to the IRS, California FTB, or any tax authority without independent verification by a qualified tax professional.
+>
+> Tax laws are complex and change frequently. This software makes simplifying assumptions and does not cover all tax situations, credits, deductions, or edge cases. The authors of this repository accept no responsibility and cannot be held accountable for any consequences — financial, legal, or otherwise — resulting from the use of this tool or reliance on its output.
+>
+> **Always consult a qualified tax professional before filing your tax return.**
+
 A Python CLI tool that calculates and generates 2025 Federal Form 1040 and California Form 540 tax returns from structured tax document data.
 
 ## Features
@@ -69,14 +75,6 @@ pytest
 ## Privacy Warning
 
 **Never commit real tax documents or personal financial data to version control.** The `input/` and `output/` directories are gitignored by default. The included `sample_tax_data.json` contains only fake data for testing purposes.
-
-## Disclaimer
-
-**This tool is purely experimental. Do not trust the output of this software to file your taxes.** The generated forms, calculations, and reports may contain errors and should never be submitted to the IRS, California FTB, or any tax authority without independent verification by a qualified tax professional.
-
-Tax laws are complex and change frequently. This software makes simplifying assumptions and does not cover all tax situations, credits, deductions, or edge cases. The authors of this repository accept no responsibility and cannot be held accountable for any consequences — financial, legal, or otherwise — resulting from the use of this tool or reliance on its output.
-
-**Always consult a qualified tax professional before filing your tax return.**
 
 ## License
 
