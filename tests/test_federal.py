@@ -45,17 +45,17 @@ class TestSimpleW2Only:
 
     def test_taxable_income(self, simple_w2_input):
         result = calculate_federal_tax(simple_w2_input)
-        # AGI $100k - standard deduction $15k = $85k
-        assert result.line_15_taxable_income == Decimal("85000")
+        # AGI $100k - standard deduction $15,750 = $84,250
+        assert result.line_15_taxable_income == Decimal("84250")
 
     def test_tax(self, simple_w2_input):
         result = calculate_federal_tax(simple_w2_input)
-        assert result.line_16_tax == Decimal("13614")
+        assert result.line_16_tax == Decimal("13449")
 
     def test_total_tax(self, simple_w2_input):
         result = calculate_federal_tax(simple_w2_input)
         # No additional taxes for $100k single filer
-        assert result.line_24_total_tax == Decimal("13614")
+        assert result.line_24_total_tax == Decimal("13449")
 
     def test_withholding(self, simple_w2_input):
         result = calculate_federal_tax(simple_w2_input)
@@ -64,8 +64,8 @@ class TestSimpleW2Only:
 
     def test_refund(self, simple_w2_input):
         result = calculate_federal_tax(simple_w2_input)
-        # Withheld $15,000 - tax $13,614 = refund $1,386
-        assert result.line_35a_refund == Decimal("1386")
+        # Withheld $15,000 - tax $13,449 = refund $1,551
+        assert result.line_35a_refund == Decimal("1551")
         assert result.line_37_amount_owed == Decimal("0")
 
     def test_no_schedules(self, simple_w2_input):

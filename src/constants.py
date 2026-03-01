@@ -19,7 +19,7 @@ FEDERAL_BRACKETS_SINGLE = [
     (Decimal("999999999"), Decimal("0.37")),
 ]
 
-FEDERAL_STANDARD_DEDUCTION_SINGLE = Decimal("15000")
+FEDERAL_STANDARD_DEDUCTION_SINGLE = Decimal("15750")
 
 # Capital gains / qualified dividends brackets (Single, 2025)
 LTCG_0_THRESHOLD = Decimal("48475")
@@ -87,7 +87,7 @@ FEDERAL_BRACKETS_MFJ = [
     (Decimal("999999999"), Decimal("0.37")),
 ]
 
-FEDERAL_STANDARD_DEDUCTION_MFJ = Decimal("30000")
+FEDERAL_STANDARD_DEDUCTION_MFJ = Decimal("31500")
 
 LTCG_0_THRESHOLD_MFJ = Decimal("96700")
 LTCG_15_THRESHOLD_MFJ = Decimal("600050")

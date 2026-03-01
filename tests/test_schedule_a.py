@@ -20,7 +20,7 @@ class TestScheduleACalculation:
     def test_no_1098_no_schedule_a_items(self):
         """Without mortgage or significant SALT, schedule_a still computed from state taxes."""
         ti = make_simple_w2_only()
-        result = calculate_schedule_a(ti, Decimal("15000"))
+        result = calculate_schedule_a(ti, Decimal("15750"))
         # W2 has $5,500 state tax, which gives SALT of $5,500
         # Total itemized = $5,500 < $15,000 standard, so not used
         assert result is not None
@@ -31,7 +31,7 @@ class TestScheduleACalculation:
     def test_mortgage_exceeds_standard(self):
         """Large mortgage interest + SALT should exceed standard deduction."""
         ti = make_with_mortgage()
-        result = calculate_schedule_a(ti, Decimal("15000"))
+        result = calculate_schedule_a(ti, Decimal("15750"))
         # $14,000 state tax + $8,000 property tax = $22,000 SALT, capped at $10,000
         # $18,000 mortgage interest
         # Total = $10,000 + $18,000 = $28,000 > $15,000 standard
@@ -48,7 +48,7 @@ class TestScheduleACalculation:
     def test_small_mortgage_uses_standard(self):
         """Small mortgage + SALT should not exceed standard deduction."""
         ti = make_with_small_mortgage()
-        result = calculate_schedule_a(ti, Decimal("15000"))
+        result = calculate_schedule_a(ti, Decimal("15750"))
         # $5,500 state tax, SALT capped at $5,500
         # $3,000 mortgage interest
         # Total = $5,500 + $3,000 = $8,500 < $15,000 standard
@@ -59,7 +59,7 @@ class TestScheduleACalculation:
     def test_salt_cap_at_10000(self):
         """SALT deduction should be capped at $10,000."""
         ti = make_with_mortgage()
-        result = calculate_schedule_a(ti, Decimal("15000"))
+        result = calculate_schedule_a(ti, Decimal("15750"))
         # State income tax $14,000 + property tax $8,000 = $22,000
         assert result.line_5d_salt_total == Decimal("22000")
         assert result.line_5e_salt_deduction == Decimal("10000")
@@ -83,13 +83,13 @@ class TestFederalWithMortgage:
         result = calculate_federal_tax(ti)
         assert result.schedule_a is not None
         assert result.schedule_a.used_itemized is False
-        assert result.line_14_total_deductions == Decimal("15000")
+        assert result.line_14_total_deductions == Decimal("15750")
 
     def test_no_1098_uses_standard(self):
         """Without any 1098, standard deduction should still be used."""
         ti = make_simple_w2_only()
         result = calculate_federal_tax(ti)
-        assert result.line_14_total_deductions == Decimal("15000")
+        assert result.line_14_total_deductions == Decimal("15750")
 
 
 class TestCaliforniaWithMortgage:
