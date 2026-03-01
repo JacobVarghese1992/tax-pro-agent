@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tax-pro-2025"
+version = "0.1.0"
+description = "2025 Federal and California tax calculation and reporting tool"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "fpdf2>=2.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

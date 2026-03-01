@@ -1,0 +1,116 @@
+{
+  "tax_year": 2025,
+  "filing_status": "married_filing_jointly",
+  "first_name": "John",
+  "last_name": "Doe",
+  "ssn": "000-00-0000",
+  "address": "123 Main Street",
+  "city": "Sacramento",
+  "state": "CA",
+  "zip_code": "95814",
+  "spouse_first_name": "Jane",
+  "spouse_last_name": "Doe",
+  "spouse_ssn": "000-00-0001",
+  "w2s": [
+    {
+      "employer_ein": "00-0000001",
+      "employer_name": "Acme Corporation",
+      "employee_ssn": "000-00-0000",
+      "employee_name": "John Doe",
+      "wages_tips_other_comp": "120000.00",
+      "federal_income_tax_withheld": "22000.00",
+      "social_security_wages": "120000.00",
+      "social_security_tax_withheld": "7440.00",
+      "medicare_wages_and_tips": "120000.00",
+      "medicare_tax_withheld": "1740.00",
+      "box_12_codes": [
+        {"code": "D", "amount": "15000.00"}
+      ],
+      "retirement_plan": true,
+      "box_14_other": [
+        {"description": "CA SDI", "amount": "1320.00"}
+      ],
+      "state": "CA",
+      "state_employer_id": "000-0000-0",
+      "state_wages": "120000.00",
+      "state_income_tax": "8500.00"
+    },
+    {
+      "employer_ein": "00-0000002",
+      "employer_name": "Beta Industries",
+      "employee_ssn": "000-00-0001",
+      "employee_name": "Jane Doe",
+      "wages_tips_other_comp": "85000.00",
+      "federal_income_tax_withheld": "14000.00",
+      "social_security_wages": "85000.00",
+      "social_security_tax_withheld": "5270.00",
+      "medicare_wages_and_tips": "85000.00",
+      "medicare_tax_withheld": "1232.50",
+      "box_12_codes": [
+        {"code": "D", "amount": "10000.00"}
+      ],
+      "retirement_plan": true,
+      "box_14_other": [
+        {"description": "CA SDI", "amount": "935.00"}
+      ],
+      "state": "CA",
+      "state_employer_id": "000-0000-1",
+      "state_wages": "85000.00",
+      "state_income_tax": "5200.00"
+    }
+  ],
+  "forms_1099_int": [
+    {
+      "payer_name": "First National Bank",
+      "recipient_name": "John Doe",
+      "recipient_tin": "000-00-0000",
+      "box_1_interest_income": "250.00"
+    }
+  ],
+  "forms_1099_div": [
+    {
+      "payer_name": "Vanguard Brokerage",
+      "recipient_name": "John Doe",
+      "recipient_tin": "000-00-0000",
+      "box_1a_ordinary_dividends": "3500.00",
+      "box_1b_qualified_dividends": "3200.00"
+    }
+  ],
+  "forms_1099_nec": [],
+  "forms_1099_b": [
+    {
+      "broker_name": "Vanguard Brokerage",
+      "recipient_name": "John Doe",
+      "recipient_tin": "000-00-0000",
+      "transactions": [
+        {
+          "description": "50 sh VOO",
+          "date_acquired": "03/15/2023",
+          "date_sold": "06/10/2025",
+          "proceeds": "28000.00",
+          "cost_basis": "22000.00",
+          "term": "long_term",
+          "basis_reported_to_irs": "yes"
+        },
+        {
+          "description": "100 sh AAPL",
+          "date_acquired": "01/10/2025",
+          "date_sold": "08/20/2025",
+          "proceeds": "19500.00",
+          "cost_basis": "18000.00",
+          "term": "short_term",
+          "basis_reported_to_irs": "yes"
+        }
+      ]
+    }
+  ],
+  "forms_1099_misc": [],
+  "forms_1098_e": [
+    {
+      "lender_name": "Federal Student Aid",
+      "borrower_name": "Jane Doe",
+      "borrower_ssn": "000-00-0001",
+      "box_1_student_loan_interest_paid": "1500.00"
+    }
+  ]
+}

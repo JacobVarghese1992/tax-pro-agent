@@ -1,0 +1,36 @@
+# Sensitive data - NEVER commit real tax documents
+input/*
+!input/sample_tax_data.json
+output/
+
+# Screenshots (may contain filled tax form data)
+*.png
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Testing
+.pytest_cache/
+
+# Environment
+.env
+.venv/
+venv/
+
+# Claude Code (user-specific)
+.claude/
+
+# Playwright MCP (dev artifacts)
+.playwright-mcp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
