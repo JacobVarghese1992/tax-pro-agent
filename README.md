@@ -6,13 +6,21 @@
 >
 > **Always consult a qualified tax professional before filing your tax return.**
 
-A Python CLI tool that calculates and generates 2025 Federal Form 1040 and California Form 540 tax returns from structured tax document data.
+A tax preparation tool that uses Claude Code to extract data from W-2, 1099, and 1098 PDFs, then calculates and generates 2025 Federal Form 1040 and California Form 540 tax returns.
+
+## How It Works
+
+1. Drop your tax document PDFs (W-2s, 1099s, 1098s) into the `input/` directory
+2. Run the `/tax-filing` skill in Claude Code
+3. Claude reads each PDF, extracts all fields, assembles a structured JSON, runs the calculator, and presents your results
+
+The `/tax-filing` skill handles the entire pipeline — you don't need to manually create any JSON files or run any commands.
 
 ## Features
 
+- **PDF extraction via Claude Code** — reads W-2, 1099-INT, 1099-DIV, 1099-NEC, 1099-B, 1099-MISC, and 1098-E documents
 - **Federal Form 1040** with Schedules 1, 2, 3, B, D, and Form 8949
 - **California Form 540** with standard deduction and exemption credits
-- Supports W-2, 1099-INT, 1099-DIV, 1099-NEC, 1099-B, 1099-MISC, and 1098-E
 - Filing statuses: Single, Married Filing Jointly
 - Capital gains/losses with wash sale tracking across Form 8949 categories (Box A/B/D/E)
 - Qualified Dividends and Capital Gain Tax Worksheet
@@ -26,45 +34,36 @@ A Python CLI tool that calculates and generates 2025 Federal Form 1040 and Calif
 pip install -r requirements.txt
 ```
 
-Or install as a package:
-
-```bash
-pip install -e .
-```
-
 Requires Python 3.11+.
 
 ## Usage
 
-Prepare your tax data as a JSON file (see `input/sample_tax_data.json` for the schema), then run:
+### With Claude Code (recommended)
 
-```bash
-python main.py --input input/sample_tax_data.json --output output/
+Place your tax PDFs in `input/`, then in Claude Code run:
+
+```
+/tax-filing
 ```
 
-For text report only (no PDF generation):
+Claude will extract data from each PDF, confirm your filing status, generate `input/tax_data.json`, run the calculations, and present a summary of your federal and California returns.
+
+### Manual (advanced)
+
+If you already have a `tax_data.json` file (e.g. from a previous run), you can invoke the calculator directly:
 
 ```bash
-python main.py --input input/sample_tax_data.json --output output/ --text-only
+python main.py --input input/tax_data.json --output output/
 ```
+
+Add `--text-only` to skip PDF generation.
 
 ### Output
 
-- `output/2025_tax_return.txt` - Human-readable text report
-- `output/2025_tax_return.pdf` - PDF report
-- `output/2025_tax_return_data.json` - Raw computation data (JSON)
-- `output/forms/` - Filled IRS and CA tax form PDFs
-
-## Input Format
-
-The input JSON file contains all extracted tax document data. See `input/sample_tax_data.json` for a complete example with fake data. Key fields:
-
-- `filing_status`: `"single"` or `"married_filing_jointly"`
-- `w2s`: Array of W-2 wage statements
-- `forms_1099_int`: Array of 1099-INT interest income forms
-- `forms_1099_div`: Array of 1099-DIV dividend forms
-- `forms_1099_b`: Array of 1099-B brokerage transaction forms
-- `forms_1098_e`: Array of 1098-E student loan interest forms
+- `output/2025_tax_return.txt` — Human-readable text report
+- `output/2025_tax_return.pdf` — PDF report
+- `output/2025_tax_return_data.json` — Raw computation data (JSON)
+- `output/forms/` — Filled IRS and CA tax form PDFs
 
 ## Running Tests
 
