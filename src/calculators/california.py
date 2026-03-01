@@ -34,9 +34,22 @@ def calculate_california_tax(
 
     result.ca_agi = result.federal_agi + result.ca_additions - result.ca_subtractions
     result.ca_standard_deduction = fsc["ca_standard_deduction"]
-    result.ca_taxable_income = max(
-        Decimal("0"), result.ca_agi - result.ca_standard_deduction
-    )
+
+    # If federal used itemized deductions, compute CA itemized deductions.
+    # CA allows mortgage interest but does NOT allow SALT deduction (can't
+    # deduct state taxes on the state return). Use whichever is greater.
+    if federal.schedule_a and federal.schedule_a.used_itemized:
+        ca_mortgage_interest = federal.schedule_a.line_10_total_interest
+        result.ca_itemized_deduction = ca_mortgage_interest
+        if result.ca_itemized_deduction > result.ca_standard_deduction:
+            result.ca_used_itemized = True
+
+    if result.ca_used_itemized:
+        ca_deduction = result.ca_itemized_deduction
+    else:
+        ca_deduction = result.ca_standard_deduction
+
+    result.ca_taxable_income = max(Decimal("0"), result.ca_agi - ca_deduction)
 
     # ── Step 5: CA Tax from Brackets ──
     # California does NOT have preferential rates for qualified dividends or LTCG

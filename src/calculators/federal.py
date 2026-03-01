@@ -7,6 +7,7 @@ from src.calculators.schedules import (
     calculate_schedule_1,
     calculate_schedule_2,
     calculate_schedule_3,
+    calculate_schedule_a,
     calculate_schedule_b,
     calculate_schedule_d,
     calculate_schedule_se,
@@ -113,11 +114,21 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
 
     # ── Step 5: Deductions and taxable income (Lines 12-15) ──
 
+    schedule_a = calculate_schedule_a(tax_input, fsc["standard_deduction"])
     result.line_12_standard_deduction = fsc["standard_deduction"]
-    result.line_14_total_deductions = (
-        result.line_12_standard_deduction
-        + result.line_13_qualified_business_deduction
-    )
+
+    if schedule_a and schedule_a.used_itemized:
+        # Itemized deductions exceed standard deduction
+        result.line_14_total_deductions = (
+            schedule_a.line_17_total_itemized
+            + result.line_13_qualified_business_deduction
+        )
+    else:
+        result.line_14_total_deductions = (
+            result.line_12_standard_deduction
+            + result.line_13_qualified_business_deduction
+        )
+
     result.line_15_taxable_income = max(
         Decimal("0"),
         result.line_11_adjusted_gross_income - result.line_14_total_deductions,
@@ -220,6 +231,7 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
 
     # ── Store schedule details ──
 
+    result.schedule_a = schedule_a
     result.schedule_1 = schedule_1
     result.schedule_2 = schedule_2
     result.schedule_3 = schedule_3

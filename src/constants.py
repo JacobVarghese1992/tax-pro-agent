@@ -98,6 +98,13 @@ NIIT_THRESHOLD_MFJ = Decimal("250000")
 FOREIGN_TAX_CREDIT_SIMPLIFIED_LIMIT_MFJ = Decimal("600")
 
 # =============================================
+# SCHEDULE A: ITEMIZED DEDUCTIONS
+# =============================================
+
+# Federal SALT deduction cap ($10,000 for both single and MFJ, per TCJA through 2025)
+SALT_DEDUCTION_LIMIT = Decimal("10000")
+
+# =============================================
 # STUDENT LOAN INTEREST DEDUCTION (1098-E)
 # =============================================
 

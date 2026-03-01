@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from src.models import (
     BasisReportedToIRS,
+    Form1098,
     Form1099B,
     Form1099BTransaction,
     Form1099DIV,
@@ -198,6 +199,88 @@ def make_high_income() -> TaxInput:
                 box_1b_qualified_dividends=Decimal("15000"),
                 box_2a_total_capital_gain=Decimal("5000"),
                 state="CA",
+            )
+        ],
+    )
+
+
+def make_with_mortgage() -> TaxInput:
+    """$200k salary + mortgage interest - triggers Schedule A itemized deductions."""
+    return TaxInput(
+        first_name="Mike",
+        last_name="Homeowner",
+        ssn="222-33-4444",
+        state="CA",
+        w2s=[
+            W2(
+                employer_ein="22-3344455",
+                employer_name="Employer Inc",
+                employee_ssn="222-33-4444",
+                employee_name="Mike Homeowner",
+                wages_tips_other_comp=Decimal("200000"),
+                federal_income_tax_withheld=Decimal("40000"),
+                social_security_wages=Decimal("176100"),
+                social_security_tax_withheld=Decimal("10918.20"),
+                medicare_wages_and_tips=Decimal("200000"),
+                medicare_tax_withheld=Decimal("2900"),
+                retirement_plan=True,
+                box_14_other=[
+                    W2Box14(description="CA SDI", amount=Decimal("2400"))
+                ],
+                state="CA",
+                state_employer_id="222-3344-5",
+                state_wages=Decimal("200000"),
+                state_income_tax=Decimal("14000"),
+            )
+        ],
+        forms_1098=[
+            Form1098(
+                lender_name="Wells Fargo Home Mortgage",
+                borrower_name="Mike Homeowner",
+                borrower_ssn="222-33-4444",
+                box_1_mortgage_interest=Decimal("18000"),
+                box_2_outstanding_principal=Decimal("450000"),
+                box_6_points_paid=Decimal("0"),
+                box_10_property_tax=Decimal("8000"),
+            )
+        ],
+    )
+
+
+def make_with_small_mortgage() -> TaxInput:
+    """$100k salary + small mortgage - itemized < standard, should use standard."""
+    return TaxInput(
+        first_name="Sam",
+        last_name="Renter",
+        ssn="333-44-5555",
+        state="CA",
+        w2s=[
+            W2(
+                employer_ein="33-4455566",
+                employer_name="Small Co",
+                employee_ssn="333-44-5555",
+                employee_name="Sam Renter",
+                wages_tips_other_comp=Decimal("100000"),
+                federal_income_tax_withheld=Decimal("15000"),
+                social_security_wages=Decimal("100000"),
+                social_security_tax_withheld=Decimal("6200"),
+                medicare_wages_and_tips=Decimal("100000"),
+                medicare_tax_withheld=Decimal("1450"),
+                box_14_other=[
+                    W2Box14(description="CA SDI", amount=Decimal("1200"))
+                ],
+                state="CA",
+                state_wages=Decimal("100000"),
+                state_income_tax=Decimal("5500"),
+            )
+        ],
+        forms_1098=[
+            Form1098(
+                lender_name="Local Credit Union",
+                borrower_name="Sam Renter",
+                borrower_ssn="333-44-5555",
+                box_1_mortgage_interest=Decimal("3000"),
+                box_2_outstanding_principal=Decimal("100000"),
             )
         ],
     )

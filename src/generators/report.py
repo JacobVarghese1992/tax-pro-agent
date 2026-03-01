@@ -114,6 +114,16 @@ class TaxReportGenerator:
                 a(f"    Box 3  Other income: {_fmt(f.box_3_other_income)}")
             a("")
 
+        for f in self.inp.forms_1098:
+            a(f"  1098 from {f.lender_name}")
+            a(f"    Borrower: {f.borrower_name}")
+            a(f"    Box 1  Mortgage interest: {_fmt(f.box_1_mortgage_interest)}")
+            if f.box_6_points_paid:
+                a(f"    Box 6  Points paid: {_fmt(f.box_6_points_paid)}")
+            if f.box_10_property_tax:
+                a(f"    Box 10 Property tax: {_fmt(f.box_10_property_tax)}")
+            a("")
+
         for f in self.inp.forms_1098_e:
             a(f"  1098-E from {f.lender_name}")
             a(f"    Borrower: {f.borrower_name}")
@@ -139,7 +149,10 @@ class TaxReportGenerator:
         a(_line("Line 11  ADJUSTED GROSS INCOME", self.fed.line_11_adjusted_gross_income))
         a("")
         a("DEDUCTIONS")
-        a(_line("Line 12  Standard deduction", self.fed.line_12_standard_deduction))
+        if self.fed.schedule_a and self.fed.schedule_a.used_itemized:
+            a(_line("Line 12  Itemized deductions (Sched A)", self.fed.schedule_a.line_17_total_itemized))
+        else:
+            a(_line("Line 12  Standard deduction", self.fed.line_12_standard_deduction))
         a(_line("Line 14  Total deductions", self.fed.line_14_total_deductions))
         a(_line("Line 15  Taxable income", self.fed.line_15_taxable_income))
         a("")
@@ -207,6 +220,26 @@ class TaxReportGenerator:
             a("-" * 48)
             a(_line("Line 1   Foreign tax credit", s.line_1_foreign_tax_credit))
 
+        if self.fed.schedule_a:
+            s = self.fed.schedule_a
+            a("")
+            a("SCHEDULE A: ITEMIZED DEDUCTIONS")
+            a("-" * 48)
+            a(_line("Line 5a  State/local income tax", s.line_5a_state_local_income_tax))
+            if s.line_5b_state_local_property_tax:
+                a(_line("Line 5b  Property tax", s.line_5b_state_local_property_tax))
+            a(_line("Line 5d  Total SALT (before cap)", s.line_5d_salt_total))
+            a(_line("Line 5e  SALT deduction (capped)", s.line_5e_salt_deduction))
+            a(_line("Line 8a  Mortgage interest", s.line_8a_mortgage_interest_1098))
+            if s.line_8c_points:
+                a(_line("Line 8c  Points", s.line_8c_points))
+            a(_line("Line 10  Total interest deduction", s.line_10_total_interest))
+            a(_line("Line 17  Total itemized deductions", s.line_17_total_itemized))
+            if s.used_itemized:
+                a("  >> Itemizing (exceeds standard deduction)")
+            else:
+                a("  >> Using standard deduction (exceeds itemized)")
+
         if self.fed.schedule_b:
             s = self.fed.schedule_b
             a("")
@@ -250,7 +283,10 @@ class TaxReportGenerator:
         a(_line("Line 14  CA additions", self.ca.ca_additions))
         a(_line("Line 15  CA subtractions", self.ca.ca_subtractions))
         a(_line("Line 17  CA AGI", self.ca.ca_agi))
-        a(_line("Line 18  CA standard deduction", self.ca.ca_standard_deduction))
+        if self.ca.ca_used_itemized:
+            a(_line("Line 18  CA itemized deduction", self.ca.ca_itemized_deduction))
+        else:
+            a(_line("Line 18  CA standard deduction", self.ca.ca_standard_deduction))
         a(_line("Line 19  CA taxable income", self.ca.ca_taxable_income))
         a(_line("Line 31  Tax", self.ca.ca_tax))
         a(_line("Line 32  Exemption credit", self.ca.ca_exemption_credit))

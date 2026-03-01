@@ -202,6 +202,19 @@ class Form1098E(BaseModel):
     box_2_capitalized_interest: bool = Field(default=False)
 
 
+class Form1098(BaseModel):
+    """Form 1098: Mortgage Interest Statement."""
+    lender_name: str
+    lender_tin: Optional[str] = None
+    borrower_name: str
+    borrower_ssn: str
+    box_1_mortgage_interest: Decimal = Field(default=Decimal("0"))
+    box_2_outstanding_principal: Decimal = Field(default=Decimal("0"))
+    box_5_mortgage_insurance_premiums: Decimal = Field(default=Decimal("0"))
+    box_6_points_paid: Decimal = Field(default=Decimal("0"))
+    box_10_property_tax: Decimal = Field(default=Decimal("0"))
+
+
 class Form1099MISC(BaseModel):
     """Form 1099-MISC: Miscellaneous Information."""
     payer_name: str
@@ -255,6 +268,7 @@ class TaxInput(BaseModel):
     forms_1099_nec: list[Form1099NEC] = Field(default_factory=list)
     forms_1099_b: list[Form1099B] = Field(default_factory=list)
     forms_1099_misc: list[Form1099MISC] = Field(default_factory=list)
+    forms_1098: list[Form1098] = Field(default_factory=list)
     forms_1098_e: list[Form1098E] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -302,6 +316,26 @@ class Schedule3Result(BaseModel):
     """Schedule 3: Additional Credits and Payments."""
     line_1_foreign_tax_credit: Decimal = Decimal("0")
     line_7_total: Decimal = Decimal("0")
+
+
+class ScheduleAResult(BaseModel):
+    """Schedule A: Itemized Deductions."""
+    # Lines 5a-5e: State and local taxes (SALT)
+    line_5a_state_local_income_tax: Decimal = Decimal("0")
+    line_5b_state_local_property_tax: Decimal = Decimal("0")
+    line_5d_salt_total: Decimal = Decimal("0")
+    line_5e_salt_deduction: Decimal = Decimal("0")  # capped at $10,000
+
+    # Lines 8-10: Interest you paid
+    line_8a_mortgage_interest_1098: Decimal = Decimal("0")
+    line_8c_points: Decimal = Decimal("0")
+    line_10_total_interest: Decimal = Decimal("0")
+
+    # Line 17: Total itemized deductions
+    line_17_total_itemized: Decimal = Decimal("0")
+
+    # Whether itemized was chosen over standard deduction
+    used_itemized: bool = False
 
 
 class ScheduleBItem(BaseModel):
@@ -410,6 +444,7 @@ class FederalTaxResult(BaseModel):
     line_37_amount_owed: Decimal = Decimal("0")
 
     # Schedule details
+    schedule_a: Optional[ScheduleAResult] = None
     schedule_1: Optional[Schedule1Result] = None
     schedule_2: Optional[Schedule2Result] = None
     schedule_3: Optional[Schedule3Result] = None
@@ -431,6 +466,8 @@ class CaliforniaTaxResult(BaseModel):
     ca_agi: Decimal = Decimal("0")
 
     ca_standard_deduction: Decimal = Decimal("0")
+    ca_itemized_deduction: Decimal = Decimal("0")
+    ca_used_itemized: bool = False
     ca_taxable_income: Decimal = Decimal("0")
 
     ca_tax: Decimal = Decimal("0")

@@ -1,6 +1,6 @@
 ---
 name: tax-filing
-description: Process W2 and 1099 PDFs to prepare 2025 federal and California tax returns
+description: Process W2, 1099, and 1098 PDFs to prepare 2025 federal and California tax returns
 ---
 
 # Tax Filing Skill
@@ -12,7 +12,7 @@ Process W2 and 1099 PDF documents to calculate and generate 2025 Federal Form 10
 ### Step 1: Identify Input Documents
 
 Ask the user for the paths to their W2, 1099, and 1098 PDF files, or look in the `input/` directory. Identify each document type:
-- W-2, 1099-INT, 1099-DIV, 1099-NEC, 1099-B, 1099-MISC, 1098-E
+- W-2, 1099-INT, 1099-DIV, 1099-NEC, 1099-B, 1099-MISC, 1098, 1098-E
 
 ### Step 2: Extract Data from Each PDF
 
@@ -132,6 +132,20 @@ Use the Read tool to view each PDF and extract structured data.
 }
 ```
 
+**For 1098** (Mortgage Interest Statement), extract:
+```json
+{
+  "lender_name": "...",
+  "borrower_name": "...",
+  "borrower_ssn": "XXX-XX-XXXX",
+  "box_1_mortgage_interest": "0.00",
+  "box_2_outstanding_principal": "0.00",
+  "box_5_mortgage_insurance_premiums": "0.00",
+  "box_6_points_paid": "0.00",
+  "box_10_property_tax": "0.00"
+}
+```
+
 **For 1098-E** (Student Loan Interest Statement), extract:
 ```json
 {
@@ -162,6 +176,7 @@ For **Single** filing:
   "forms_1099_nec": [...],
   "forms_1099_b": [...],
   "forms_1099_misc": [],
+  "forms_1098": [],
   "forms_1098_e": []
 }
 ```
@@ -184,6 +199,7 @@ For **Married Filing Jointly (MFJ)**: include spouse info, and put W2s/1099s fro
   "forms_1099_nec": [],
   "forms_1099_b": ["... both spouses' 1099-Bs ..."],
   "forms_1099_misc": [],
+  "forms_1098": ["... any 1098 mortgage interest forms ..."],
   "forms_1098_e": ["... any 1098-E forms ..."]
 }
 ```
@@ -214,4 +230,6 @@ Read `output/2025_tax_return.txt` and present the key results:
 - Include all Box 12 codes with their letter code and amount
 - For MFJ: put ALL W-2s and 1099s from both spouses into the same lists — the calculators aggregate across all documents automatically
 - For MFJ: `spouse_first_name`, `spouse_last_name`, and `spouse_ssn` are required
+- 1098 `box_10_property_tax` may be blank on many 1098 forms — use "0.00" if not present
+- 1098 `borrower_name` should match the name on the form (may be either spouse)
 - 1098-E `borrower_name` should match the name on the form (may be either spouse)

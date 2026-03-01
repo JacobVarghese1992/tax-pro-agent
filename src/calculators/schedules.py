@@ -13,6 +13,7 @@ from src.constants import (
     MEDICARE_RATE_SELF_EMPLOYED,
     NIIT_RATE,
     NIIT_THRESHOLD_SINGLE,
+    SALT_DEDUCTION_LIMIT,
     SCHEDULE_B_THRESHOLD,
     SE_INCOME_FACTOR,
     SS_RATE_SELF_EMPLOYED,
@@ -24,6 +25,7 @@ from src.models import (
     Schedule1Result,
     Schedule2Result,
     Schedule3Result,
+    ScheduleAResult,
     ScheduleBItem,
     ScheduleBResult,
     ScheduleDResult,
@@ -32,6 +34,65 @@ from src.models import (
     TermType,
 )
 from src.utils import calculate_tax_from_brackets, round_dollar
+
+
+def calculate_schedule_a(
+    tax_input: TaxInput, standard_deduction: Decimal
+) -> ScheduleAResult | None:
+    """Calculate Schedule A: Itemized Deductions.
+
+    Computes itemized deductions from Form 1098 mortgage interest,
+    state/local taxes (SALT), and points. Compares against the standard
+    deduction and sets used_itemized=True if itemizing is beneficial.
+
+    Returns None if no itemizable deductions exist.
+    """
+    _Z = Decimal("0")
+
+    # Lines 5a: State and local income taxes paid (from W-2 box 17 + 1099 state withholding)
+    state_income_tax = sum((w.state_income_tax for w in tax_input.w2s), _Z)
+    for f in tax_input.forms_1099_int:
+        state_income_tax += f.state_tax_withheld
+    for f in tax_input.forms_1099_div:
+        state_income_tax += f.state_tax_withheld
+    for f in tax_input.forms_1099_nec:
+        state_income_tax += f.state_income_tax_withheld
+    for f in tax_input.forms_1099_misc:
+        state_income_tax += f.state_tax_withheld
+
+    # Line 5b: State and local property taxes (from 1098 box 10)
+    property_tax = sum((f.box_10_property_tax for f in tax_input.forms_1098), _Z)
+
+    # Line 5d: Total SALT before cap
+    salt_total = state_income_tax + property_tax
+
+    # Line 5e: SALT deduction (capped at $10,000)
+    salt_deduction = min(salt_total, SALT_DEDUCTION_LIMIT)
+
+    # Lines 8a, 8c: Mortgage interest and points from Form 1098
+    mortgage_interest = sum((f.box_1_mortgage_interest for f in tax_input.forms_1098), _Z)
+    points = sum((f.box_6_points_paid for f in tax_input.forms_1098), _Z)
+    total_interest = mortgage_interest + points
+
+    # Line 17: Total itemized deductions
+    total_itemized = salt_deduction + total_interest
+
+    if total_itemized == _Z:
+        return None
+
+    used_itemized = total_itemized > standard_deduction
+
+    return ScheduleAResult(
+        line_5a_state_local_income_tax=state_income_tax,
+        line_5b_state_local_property_tax=property_tax,
+        line_5d_salt_total=salt_total,
+        line_5e_salt_deduction=salt_deduction,
+        line_8a_mortgage_interest_1098=mortgage_interest,
+        line_8c_points=points,
+        line_10_total_interest=total_interest,
+        line_17_total_itemized=total_itemized,
+        used_itemized=used_itemized,
+    )
 
 
 def calculate_schedule_b(tax_input: TaxInput) -> ScheduleBResult | None:
