@@ -258,6 +258,14 @@ class Form1099MISC(BaseModel):
 # Aggregate Tax Input
 # =============================================
 
+class Dependent(BaseModel):
+    """A dependent claimed on the tax return."""
+    name: str
+    ssn: str
+    relationship: str = Field(description="e.g. son, daughter, parent, other")
+    age: int = Field(description="Age at end of tax year")
+
+
 class TaxInput(BaseModel):
     """All extracted tax documents for one taxpayer (or couple if MFJ)."""
     tax_year: int = 2025
@@ -275,6 +283,15 @@ class TaxInput(BaseModel):
     spouse_first_name: Optional[str] = None
     spouse_last_name: Optional[str] = None
     spouse_ssn: Optional[str] = None
+
+    # Dependents
+    dependents: list[Dependent] = Field(default_factory=list)
+
+    # Additional info (not from tax documents)
+    charitable_contributions_cash: Decimal = Field(default=Decimal("0"))
+    federal_estimated_payments: Decimal = Field(default=Decimal("0"))
+    ca_estimated_payments: Decimal = Field(default=Decimal("0"))
+    digital_assets: bool = Field(default=False)
 
     w2s: list[W2] = Field(default_factory=list)
     forms_1099_int: list[Form1099INT] = Field(default_factory=list)
@@ -345,6 +362,9 @@ class ScheduleAResult(BaseModel):
     line_8a_mortgage_interest_1098: Decimal = Decimal("0")
     line_8c_points: Decimal = Decimal("0")
     line_10_total_interest: Decimal = Decimal("0")
+
+    # Lines 11-14: Gifts to charity
+    line_12_charitable_cash: Decimal = Decimal("0")
 
     # Line 17: Total itemized deductions
     line_17_total_itemized: Decimal = Decimal("0")

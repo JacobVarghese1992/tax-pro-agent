@@ -14,6 +14,7 @@ from src.calculators.schedules import (
 )
 from src.models import FederalTaxResult, TaxInput
 from src.utils import (
+    calculate_child_tax_credit,
     calculate_student_loan_deduction,
     calculate_tax_from_brackets,
     get_filing_status_constants,
@@ -184,6 +185,15 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
         niit_threshold=fsc["niit_threshold"],
     )
 
+    # ── Step 7.5: Child Tax Credit (Line 19) ──
+
+    if tax_input.dependents:
+        result.line_19_child_credit = calculate_child_tax_credit(
+            tax_input.dependents,
+            result.line_11_adjusted_gross_income,
+            fsc["child_tax_credit_phaseout_start"],
+        )
+
     # ── Step 8: Credits and total tax (Lines 17-24) ──
 
     if schedule_2:
@@ -219,7 +229,9 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
     result.line_25d_total_withheld = (
         result.line_25a_w2_withheld + result.line_25b_1099_withheld
     )
-    result.line_33_total_payments = result.line_25d_total_withheld
+    result.line_33_total_payments = (
+        result.line_25d_total_withheld + tax_input.federal_estimated_payments
+    )
 
     # ── Step 10: Refund or amount owed (Lines 34-37) ──
 

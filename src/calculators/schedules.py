@@ -75,8 +75,11 @@ def calculate_schedule_a(
     points = sum((f.box_6_points_paid for f in tax_input.forms_1098), _Z)
     total_interest = mortgage_interest + points
 
+    # Lines 12: Charitable contributions (cash)
+    charitable_cash = tax_input.charitable_contributions_cash
+
     # Line 17: Total itemized deductions
-    total_itemized = salt_deduction + total_interest
+    total_itemized = salt_deduction + total_interest + charitable_cash
 
     if total_itemized == _Z:
         return None
@@ -91,6 +94,7 @@ def calculate_schedule_a(
         line_8a_mortgage_interest_1098=mortgage_interest,
         line_8c_points=points,
         line_10_total_interest=total_interest,
+        line_12_charitable_cash=charitable_cash,
         line_17_total_itemized=total_itemized,
         used_itemized=used_itemized,
     )

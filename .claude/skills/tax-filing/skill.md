@@ -171,6 +171,17 @@ Use the Read tool to view each PDF and extract structured data.
 }
 ```
 
+### Step 2.5: Ask Additional Questions
+
+After extracting all PDF data and confirming filing status, ask the user these questions:
+
+1. **Dependents**: "Do you have any dependents (children or others you support)? If yes, provide each dependent's name, SSN, relationship (e.g. son, daughter), and age at end of 2025."
+2. **Charitable contributions**: "Did you make any charitable cash donations in 2025? If yes, what was the total amount?"
+3. **Estimated tax payments**: "Did you make any estimated tax payments (quarterly) for 2025? If yes, how much total for federal and how much for California?"
+4. **Digital assets**: Auto-detect from 1099-B/1099-DA — if any crypto or digital asset transactions exist, set `digital_assets` to `true`. Otherwise ask: "Did you sell, exchange, or otherwise dispose of any digital assets (cryptocurrency, NFTs) in 2025?"
+
+Add the answers to the JSON in Step 3.
+
 ### Step 3: Assemble Tax Input JSON
 
 Combine all extracted documents into a single JSON file. Get personal info from the W-2 employee fields.
@@ -184,6 +195,11 @@ For **Single** filing:
   "last_name": "...",
   "ssn": "XXX-XX-XXXX",
   "state": "CA",
+  "dependents": [],
+  "charitable_contributions_cash": "0.00",
+  "federal_estimated_payments": "0.00",
+  "ca_estimated_payments": "0.00",
+  "digital_assets": false,
   "w2s": [...],
   "forms_1099_int": [...],
   "forms_1099_div": [...],
@@ -208,6 +224,11 @@ For **Married Filing Jointly (MFJ)**: include spouse info, and put W2s/1099s fro
   "spouse_last_name": "...",
   "spouse_ssn": "XXX-XX-XXXX",
   "state": "CA",
+  "dependents": [{"name": "...", "ssn": "XXX-XX-XXXX", "relationship": "son", "age": 5}],
+  "charitable_contributions_cash": "0.00",
+  "federal_estimated_payments": "0.00",
+  "ca_estimated_payments": "0.00",
+  "digital_assets": false,
   "w2s": ["... both spouses' W-2s ..."],
   "forms_1099_int": ["... both spouses' 1099-INTs ..."],
   "forms_1099_div": ["... both spouses' 1099-DIVs ..."],

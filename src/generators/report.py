@@ -114,6 +114,23 @@ class TaxReportGenerator:
                 a(f"    Box 3  Other income: {_fmt(f.box_3_other_income)}")
             a("")
 
+        if self.inp.dependents:
+            a("  Dependents:")
+            for d in self.inp.dependents:
+                a(f"    {d.name} (age {d.age}, {d.relationship})")
+            a("")
+
+        if self.inp.charitable_contributions_cash > 0:
+            a(f"  Charitable contributions (cash): {_fmt(self.inp.charitable_contributions_cash)}")
+            a("")
+
+        if self.inp.federal_estimated_payments > 0 or self.inp.ca_estimated_payments > 0:
+            if self.inp.federal_estimated_payments > 0:
+                a(f"  Federal estimated payments: {_fmt(self.inp.federal_estimated_payments)}")
+            if self.inp.ca_estimated_payments > 0:
+                a(f"  CA estimated payments: {_fmt(self.inp.ca_estimated_payments)}")
+            a("")
+
         for f in self.inp.forms_1099_sa:
             a(f"  1099-SA from {f.payer_name}")
             a(f"    Recipient: {f.recipient_name}")
@@ -168,6 +185,8 @@ class TaxReportGenerator:
         a(_line("Line 16  Tax", self.fed.line_16_tax))
         a(_line("Line 17  Sched 2, Part I", self.fed.line_17_schedule_2_part1))
         a(_line("Line 18  Sum of 16 and 17", self.fed.line_18_sum))
+        if self.fed.line_19_child_credit:
+            a(_line("Line 19  Child tax credit", self.fed.line_19_child_credit))
         a(_line("Line 20  Credits (Sched 3)", self.fed.line_20_schedule_3_part1))
         a(_line("Line 22  After credits", self.fed.line_22_after_credits))
         a(_line("Line 23  Other taxes (Sched 2)", self.fed.line_23_other_taxes))
@@ -242,6 +261,8 @@ class TaxReportGenerator:
             if s.line_8c_points:
                 a(_line("Line 8c  Points", s.line_8c_points))
             a(_line("Line 10  Total interest deduction", s.line_10_total_interest))
+            if s.line_12_charitable_cash:
+                a(_line("Line 12  Charitable (cash)", s.line_12_charitable_cash))
             a(_line("Line 17  Total itemized deductions", s.line_17_total_itemized))
             if s.used_itemized:
                 a("  >> Itemizing (exceeds standard deduction)")

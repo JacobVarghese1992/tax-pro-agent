@@ -98,6 +98,16 @@ NIIT_THRESHOLD_MFJ = Decimal("250000")
 FOREIGN_TAX_CREDIT_SIMPLIFIED_LIMIT_MFJ = Decimal("600")
 
 # =============================================
+# CHILD TAX CREDIT
+# =============================================
+
+CHILD_TAX_CREDIT_AMOUNT = Decimal("2000")
+OTHER_DEPENDENT_CREDIT_AMOUNT = Decimal("500")
+CHILD_TAX_CREDIT_PHASEOUT_START_SINGLE = Decimal("200000")
+CHILD_TAX_CREDIT_PHASEOUT_START_MFJ = Decimal("400000")
+CHILD_TAX_CREDIT_PHASEOUT_RATE = Decimal("50")  # $50 per $1,000 over threshold
+
+# =============================================
 # HSA (Form 1099-SA / Form 8889)
 # =============================================
 

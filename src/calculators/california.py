@@ -97,6 +97,9 @@ def calculate_california_tax(
         if f.state == "CA":
             result.ca_tax_withheld += f.state_tax_withheld
 
+    # CA estimated payments
+    result.ca_estimated_payments = tax_input.ca_estimated_payments
+
     # Excess SDI/VPDI (Line 74): Only claimable when a person had MULTIPLE
     # employers whose combined SDI exceeds the annual max. Since CA removed
     # the SDI wage ceiling in 2024, excess SDI is effectively $0 — each

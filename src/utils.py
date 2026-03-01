@@ -13,6 +13,10 @@ from src.constants import (
     CA_PERSONAL_EXEMPTION_CREDIT_MFJ,
     CA_STANDARD_DEDUCTION_MFJ,
     CA_STANDARD_DEDUCTION_SINGLE,
+    CHILD_TAX_CREDIT_AMOUNT,
+    CHILD_TAX_CREDIT_PHASEOUT_RATE,
+    CHILD_TAX_CREDIT_PHASEOUT_START_MFJ,
+    CHILD_TAX_CREDIT_PHASEOUT_START_SINGLE,
     FEDERAL_BRACKETS_MFJ,
     FEDERAL_BRACKETS_SINGLE,
     FEDERAL_STANDARD_DEDUCTION_MFJ,
@@ -25,6 +29,7 @@ from src.constants import (
     LTCG_15_THRESHOLD_MFJ,
     NIIT_THRESHOLD_MFJ,
     NIIT_THRESHOLD_SINGLE,
+    OTHER_DEPENDENT_CREDIT_AMOUNT,
     STUDENT_LOAN_INTEREST_MAX_DEDUCTION,
     STUDENT_LOAN_PHASEOUT_END_MFJ,
     STUDENT_LOAN_PHASEOUT_END_SINGLE,
@@ -84,6 +89,7 @@ def get_filing_status_constants(filing_status: str) -> dict:
             "additional_medicare_threshold": ADDITIONAL_MEDICARE_THRESHOLD_MFJ,
             "niit_threshold": NIIT_THRESHOLD_MFJ,
             "foreign_tax_credit_limit": FOREIGN_TAX_CREDIT_SIMPLIFIED_LIMIT_MFJ,
+            "child_tax_credit_phaseout_start": CHILD_TAX_CREDIT_PHASEOUT_START_MFJ,
             "ca_brackets": CA_BRACKETS_MFJ,
             "ca_standard_deduction": CA_STANDARD_DEDUCTION_MFJ,
             "ca_exemption_credit": CA_PERSONAL_EXEMPTION_CREDIT_MFJ,
@@ -100,6 +106,7 @@ def get_filing_status_constants(filing_status: str) -> dict:
             "additional_medicare_threshold": ADDITIONAL_MEDICARE_THRESHOLD_SINGLE,
             "niit_threshold": NIIT_THRESHOLD_SINGLE,
             "foreign_tax_credit_limit": FOREIGN_TAX_CREDIT_SIMPLIFIED_LIMIT,
+            "child_tax_credit_phaseout_start": CHILD_TAX_CREDIT_PHASEOUT_START_SINGLE,
             "ca_brackets": CA_BRACKETS_SINGLE,
             "ca_standard_deduction": CA_STANDARD_DEDUCTION_SINGLE,
             "ca_exemption_credit": CA_PERSONAL_EXEMPTION_CREDIT,
@@ -107,6 +114,37 @@ def get_filing_status_constants(filing_status: str) -> dict:
             "student_loan_phaseout_start": STUDENT_LOAN_PHASEOUT_START_SINGLE,
             "student_loan_phaseout_end": STUDENT_LOAN_PHASEOUT_END_SINGLE,
         }
+
+
+def calculate_child_tax_credit(
+    dependents: list,
+    agi: Decimal,
+    phaseout_start: Decimal,
+) -> Decimal:
+    """Calculate Child Tax Credit (Form 1040 Line 19).
+
+    $2,000 per qualifying child under 17, $500 per other dependent.
+    Reduced by $50 for each $1,000 (or fraction) of AGI over the threshold.
+    """
+    qualifying_children = sum(1 for d in dependents if d.age < 17)
+    other_dependents = sum(1 for d in dependents if d.age >= 17)
+
+    total_credit = (
+        qualifying_children * CHILD_TAX_CREDIT_AMOUNT
+        + other_dependents * OTHER_DEPENDENT_CREDIT_AMOUNT
+    )
+
+    if total_credit <= 0:
+        return Decimal("0")
+
+    if agi > phaseout_start:
+        excess = agi - phaseout_start
+        # Reduce by $50 for each $1,000 (or fraction thereof)
+        reduction_units = (excess + Decimal("999")) // Decimal("1000")
+        reduction = reduction_units * CHILD_TAX_CREDIT_PHASEOUT_RATE
+        total_credit = max(Decimal("0"), total_credit - reduction)
+
+    return round_dollar(total_credit)
 
 
 def calculate_student_loan_deduction(
