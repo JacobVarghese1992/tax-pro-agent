@@ -27,13 +27,15 @@ The skill in `.claude/skills/tax-filing/` uses the cross-platform agent skills f
 
 ## Features
 
-- **PDF extraction via Claude Code** — reads W-2, 1099-INT, 1099-DIV, 1099-NEC, 1099-B, 1099-MISC, and 1098-E documents
-- **Federal Form 1040** with Schedules 1, 2, 3, B, D, and Form 8949
+- **PDF extraction via Claude Code** — reads W-2, 1099-INT, 1099-DIV, 1099-NEC, 1099-B, 1099-MISC, 1099-SA, 1098, and 1098-E documents
+- **Federal Form 1040** with Schedules A, 1, 2, 3, B, D, and Form 8949
 - **California Form 540** with standard deduction and exemption credits
 - Filing statuses: Single, Married Filing Jointly
 - Capital gains/losses with wash sale tracking across Form 8949 categories (Box A/B/D/E)
 - Qualified Dividends and Capital Gain Tax Worksheet
 - Additional Medicare Tax and Net Investment Income Tax (Schedule 2)
+- Schedule A itemized deductions (mortgage interest, SALT with $10k cap) vs standard deduction
+- HSA distributions (1099-SA) with qualified/non-qualified handling and 20% penalty
 - Student loan interest deduction (with AGI phase-out)
 - Generates filled IRS/CA PDF forms, text reports, and PDF reports
 
