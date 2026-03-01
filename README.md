@@ -12,7 +12,8 @@ A tax preparation tool that uses an AI coding agent to extract data from W-2, 10
 
 1. Drop your tax document PDFs (W-2s, 1099s, 1098s) into the `input/` directory
 2. Run the `/tax-filing` skill in your coding agent
-3. The agent reads each PDF, extracts all fields, assembles a structured JSON, runs the calculator, and presents your results
+3. The agent reads each PDF, extracts all fields, then asks you about dependents, charitable contributions, and estimated payments
+4. It assembles a structured JSON, runs the calculator, and presents your results
 
 The `/tax-filing` skill handles the entire pipeline — you don't need to manually create any JSON files or run any commands.
 
@@ -34,9 +35,11 @@ The skill in `.claude/skills/tax-filing/` uses the cross-platform agent skills f
 - Capital gains/losses with wash sale tracking across Form 8949 categories (Box A/B/D/E)
 - Qualified Dividends and Capital Gain Tax Worksheet
 - Additional Medicare Tax and Net Investment Income Tax (Schedule 2)
-- Schedule A itemized deductions (mortgage interest, SALT with $10k cap) vs standard deduction
+- Schedule A itemized deductions (mortgage interest, SALT with $10k cap, charitable contributions) vs standard deduction
+- Child Tax Credit ($2,000/child under 17) and Credit for Other Dependents ($500) with AGI phase-out
 - HSA distributions (1099-SA) with qualified/non-qualified handling and 20% penalty
 - Student loan interest deduction (with AGI phase-out)
+- Estimated tax payments (federal and California)
 - Generates filled IRS/CA PDF forms, text reports, and PDF reports
 
 ## Installation
@@ -57,7 +60,7 @@ Place your tax PDFs in `input/`, then in Claude Code run:
 /tax-filing
 ```
 
-Claude will extract data from each PDF, confirm your filing status, generate `input/tax_data.json`, run the calculations, and present a summary of your federal and California returns.
+Claude will extract data from each PDF, confirm your filing status, ask about dependents and other items not on tax forms, generate `input/tax_data.json`, run the calculations, and present a summary of your federal and California returns.
 
 ### Manual (advanced)
 
