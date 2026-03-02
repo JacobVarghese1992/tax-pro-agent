@@ -195,6 +195,7 @@ class TaxReportGenerator:
         a("PAYMENTS")
         a(_line("Line 25a W-2 withholding", self.fed.line_25a_w2_withheld))
         a(_line("Line 25b 1099 withholding", self.fed.line_25b_1099_withheld))
+        a(_line("Line 25c Other withholding (Form 8959)", self.fed.line_25c_other_withheld))
         a(_line("Line 25d Total withheld", self.fed.line_25d_total_withheld))
         a(_line("Line 33  TOTAL PAYMENTS", self.fed.line_33_total_payments))
         a("")

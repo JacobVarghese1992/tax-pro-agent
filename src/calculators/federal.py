@@ -14,6 +14,7 @@ from src.calculators.schedules import (
     calculate_schedule_se,
 )
 from src.models import FederalTaxResult, TaxInput
+from src.constants import MEDICARE_RATE_EMPLOYEE
 from src.utils import (
     calculate_child_tax_credit,
     calculate_student_loan_deduction,
@@ -242,8 +243,20 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
             (f.total_federal_tax_withheld for f in tax_input.forms_1099_b), _Z
         )
     )
+
+    # Line 25c: Additional Medicare Tax withholding (Form 8959, line 24)
+    # W-2 Box 6 includes both regular Medicare (1.45%) and Additional Medicare Tax (0.9%).
+    # The excess over regular Medicare is a payment credit.
+    total_medicare_withheld = sum((w.medicare_tax_withheld for w in tax_input.w2s), _Z)
+    regular_medicare = round_dollar(
+        sum((w.medicare_wages_and_tips for w in tax_input.w2s), _Z) * MEDICARE_RATE_EMPLOYEE
+    )
+    result.line_25c_other_withheld = max(_Z, total_medicare_withheld - regular_medicare)
+
     result.line_25d_total_withheld = (
-        result.line_25a_w2_withheld + result.line_25b_1099_withheld
+        result.line_25a_w2_withheld
+        + result.line_25b_1099_withheld
+        + result.line_25c_other_withheld
     )
     result.line_33_total_payments = (
         result.line_25d_total_withheld + tax_input.federal_estimated_payments

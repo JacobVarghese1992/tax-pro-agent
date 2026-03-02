@@ -485,6 +485,7 @@ class FederalTaxResult(BaseModel):
     # Payments (Lines 25-33)
     line_25a_w2_withheld: Decimal = Decimal("0")
     line_25b_1099_withheld: Decimal = Decimal("0")
+    line_25c_other_withheld: Decimal = Decimal("0")
     line_25d_total_withheld: Decimal = Decimal("0")
     line_33_total_payments: Decimal = Decimal("0")
 

@@ -191,6 +191,7 @@ class IRSFormFiller:
         # --- Page 2: Payments ---
         fields[f"{p2}.f2_17[0]"] = _amt(self.fed.line_25a_w2_withheld)           # Line 25a
         fields[f"{p2}.f2_18[0]"] = _amt(self.fed.line_25b_1099_withheld)         # Line 25b
+        fields[f"{p2}.f2_19[0]"] = _amt(self.fed.line_25c_other_withheld)        # Line 25c
         fields[f"{p2}.f2_20[0]"] = _amt(self.fed.line_25d_total_withheld)        # Line 25d
         fields[f"{p2}.f2_29[0]"] = _amt(self.fed.line_33_total_payments)         # Line 33
 

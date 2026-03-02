@@ -142,6 +142,33 @@ class TestHighIncome:
         # AGI > $200k and has investment income
         assert result.schedule_2.line_17_niit > 0
 
+    def test_additional_medicare_withholding_credit(self, high_income_input):
+        """Form 8959: excess Medicare withholding over regular 1.45% is a Line 25c credit."""
+        result = calculate_federal_tax(high_income_input)
+        # W-2 Medicare wages = $400,000, Medicare withheld = $5,800
+        # Regular Medicare = 1.45% × $400,000 = $5,800
+        # Additional Medicare withholding = $5,800 - $5,800 = $0
+        # (This fixture has withheld exactly 1.45%, so no excess)
+        assert result.line_25c_other_withheld == Decimal("0")
+
+    def test_additional_medicare_withholding_with_excess(self):
+        """When employer withholds 0.9% Additional Medicare, it appears on Line 25c."""
+        from tests.fixtures.sample_data import make_high_income
+        ti = make_high_income()
+        # Simulate employer withholding additional 0.9% on wages over $200k
+        # Regular Medicare on $400k = 1.45% × $400k = $5,800
+        # Additional on $200k excess = 0.9% × $200k = $1,800
+        # Total withheld = $7,600
+        ti.w2s[0].medicare_tax_withheld = Decimal("7600")
+        result = calculate_federal_tax(ti)
+        # Excess = $7,600 - $5,800 = $1,800
+        assert result.line_25c_other_withheld == Decimal("1800")
+        assert result.line_25d_total_withheld == (
+            result.line_25a_w2_withheld
+            + result.line_25b_1099_withheld
+            + Decimal("1800")
+        )
+
 
 class TestCapitalLoss:
     def test_loss_limited(self, capital_loss_input):
