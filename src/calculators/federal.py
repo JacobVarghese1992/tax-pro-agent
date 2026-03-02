@@ -158,7 +158,12 @@ def calculate_federal_tax(tax_input: TaxInput) -> FederalTaxResult:
     # ── Step 6: Tax computation (Line 16) ──
 
     # Determine if we need the QDCG worksheet
-    net_ltcg = schedule_d.line_15_net_long_term if schedule_d else Decimal("0")
+    # QDCG Line 3: "Enter the smaller of Schedule D line 15 or line 16.
+    # If either is a loss, enter -0-."
+    if schedule_d and schedule_d.line_15_net_long_term > 0 and schedule_d.line_16_combine > 0:
+        net_ltcg = min(schedule_d.line_15_net_long_term, schedule_d.line_16_combine)
+    else:
+        net_ltcg = Decimal("0")
     has_preferential = qualified_dividends > 0 or net_ltcg > 0
 
     if has_preferential and result.line_15_taxable_income > 0:
