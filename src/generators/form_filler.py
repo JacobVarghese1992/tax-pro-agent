@@ -50,6 +50,18 @@ class IRSFormFiller:
         self.ca = tax_return.california
         self.inp = tax_return.input_data
 
+    @property
+    def _names_on_return(self) -> str:
+        """Return name(s) for schedule headers (both spouses for MFJ)."""
+        primary = f"{self.inp.first_name} {self.inp.last_name}"
+        if (
+            self.inp.filing_status == "married_filing_jointly"
+            and self.inp.spouse_first_name
+        ):
+            spouse = f"{self.inp.spouse_first_name} {self.inp.spouse_last_name or ''}".strip()
+            return f"{primary} & {spouse}"
+        return primary
+
     def generate_all(self, output_dir: Path) -> list[Path]:
         """Generate all applicable filled PDF forms."""
         output_dir.mkdir(exist_ok=True)
@@ -230,7 +242,7 @@ class IRSFormFiller:
         fields = {}
 
         # Header
-        fields[f"{p1}.f1_01[0]"] = f"{self.inp.first_name} {self.inp.last_name}"
+        fields[f"{p1}.f1_01[0]"] = self._names_on_return
         ssn = self.inp.ssn.replace("-", "")
         fields[f"{p1}.f1_02[0]"] = ssn
 
@@ -274,7 +286,7 @@ class IRSFormFiller:
         fields = {}
 
         # Header
-        fields[f"{p1}.f1_01[0]"] = f"{self.inp.first_name} {self.inp.last_name}"
+        fields[f"{p1}.f1_01[0]"] = self._names_on_return
         ssn = self.inp.ssn.replace("-", "")
         fields[f"{p1}.f1_02[0]"] = ssn
 
@@ -331,7 +343,7 @@ class IRSFormFiller:
         fields = {}
 
         # Header
-        fields[f"{p1}.f1_1[0]"] = f"{self.inp.first_name} {self.inp.last_name}"
+        fields[f"{p1}.f1_1[0]"] = self._names_on_return
         ssn = self.inp.ssn.replace("-", "")
         fields[f"{p1}.f1_2[0]"] = ssn
 
@@ -437,13 +449,9 @@ class IRSFormFiller:
         fields = {}
 
         # Header
-        fields[f"{page_prefix}.{field_prefix}_01[0]"] = (
-            f"{self.inp.first_name} {self.inp.last_name}"
-        )
+        fields[f"{page_prefix}.{field_prefix}_01[0]"] = self._names_on_return
         ssn = self.inp.ssn.replace("-", "")
-        fields[f"{page_prefix}.{field_prefix}_02[0]"] = (
-            ssn
-        )
+        fields[f"{page_prefix}.{field_prefix}_02[0]"] = ssn
 
         # Set checkbox for box type
         # Box A/D = basis reported, B/E = basis not reported
@@ -527,7 +535,7 @@ class IRSFormFiller:
         p2 = "form1[0].Page2[0]"
 
         # Header
-        fields[f"{p1}.f1_01[0]"] = f"{self.inp.first_name} {self.inp.last_name}"
+        fields[f"{p1}.f1_01[0]"] = self._names_on_return
         ssn = self.inp.ssn.replace("-", "")
         fields[f"{p1}.f1_02[0]"] = ssn
 

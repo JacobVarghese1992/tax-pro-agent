@@ -175,6 +175,7 @@ Use the Read tool to view each PDF and extract structured data.
 
 After extracting all PDF data and confirming filing status, ask the user these questions:
 
+0. **SSN verification**: Check if any SSN on the extracted documents is masked (e.g. "XXX-XX-7633" showing only the last 4 digits). Many W-2 employee copies and 1099s mask the SSN for security. If the primary taxpayer's or spouse's SSN is masked, **ask the user for the full SSN**. This is required to fill tax forms correctly. For MFJ, verify both SSNs are complete.
 1. **Dependents**: "Do you have any dependents (children or others you support)? If yes, provide each dependent's name, SSN, relationship (e.g. son, daughter), and age at end of 2025."
 2. **Charitable contributions**: "Did you make any charitable cash donations in 2025? If yes, what was the total amount?"
 3. **Estimated tax payments**: "Did you make any estimated tax payments (quarterly) for 2025? If yes, how much total for federal and how much for California?"
@@ -265,7 +266,7 @@ Read `output/2025_tax_return.txt` and present the key results:
 - Empty or zero boxes: use "0.00"
 - For 1099-B `term`: use "short_term" (held <= 1 year), "long_term" (held > 1 year), or "unknown"
 - For 1099-B `basis_reported_to_irs`: use "yes", "no", or "unknown"
-- The employee SSN from the first W-2 becomes the taxpayer SSN
+- The employee SSN from the first W-2 becomes the taxpayer SSN. **IMPORTANT**: Many W-2 employee copies mask the SSN (e.g. "XXX-XX-7633"). If the SSN is masked, you MUST ask the user for the full SSN before assembling the JSON — masked SSNs cannot be used on tax forms
 - For W-2 Box 14 items, preserve the exact label text (needed to identify CA SDI)
 - Include all Box 12 codes with their letter code and amount
 - For MFJ: put ALL W-2s and 1099s from both spouses into the same lists — the calculators aggregate across all documents automatically
