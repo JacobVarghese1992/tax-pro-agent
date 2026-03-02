@@ -161,8 +161,17 @@ def calculate_schedule_d(tax_input: TaxInput) -> ScheduleDResult | None:
 
     for form in tax_input.forms_1099_b:
         for t in form.transactions:
-            gain = t.gain_or_loss if t.gain_or_loss is not None else Decimal("0")
             is_reported = t.basis_reported_to_irs == BasisReportedToIRS.YES
+
+            if is_reported:
+                # Covered lots (Box A/D): use raw proceeds - cost_basis.
+                # For intra-broker wash sales on covered securities, the broker
+                # already adjusts the replacement shares' cost basis upward, so
+                # adding back wash_sale_loss_disallowed here would double-count.
+                gain = t.proceeds - t.cost_basis
+            else:
+                # Noncovered lots (Box B/E): use gain including wash sale adjustment
+                gain = t.gain_or_loss if t.gain_or_loss is not None else Decimal("0")
 
             if t.term == TermType.SHORT_TERM:
                 if is_reported:
